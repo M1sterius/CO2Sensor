@@ -1,0 +1,4 @@
+CMakeBuild/
+.idea/
+.vscode/
+.pio/
