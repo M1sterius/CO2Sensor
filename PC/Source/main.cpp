@@ -2,6 +2,8 @@
 #include "asio.hpp"
 #include "fmt/format.h"
 
+#include "Protocol.hpp"
+
 #include <iostream>
 #include <cstdint>
 #include <thread>

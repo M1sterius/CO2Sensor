@@ -6,12 +6,12 @@ set(DEPENDENCIES_DIR ${CMAKE_SOURCE_DIR}/Dependencies)
 
 add_executable(CO2Server
     Source/main.cpp
-        Server.cpp
-        Server.hpp
+    Server.cpp
 )
 
 target_include_directories(CO2Server PRIVATE
     Source
+    ../Protocol
     ${DEPENDENCIES_DIR}/boost_asio
     ${DEPENDENCIES_DIR}/fmt/include
 )
