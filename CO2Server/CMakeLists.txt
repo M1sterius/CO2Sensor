@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 4.0)
+cmake_minimum_required(VERSION 3.29)
 project(CO2Server)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -6,6 +6,8 @@ set(DEPENDENCIES_DIR ${CMAKE_SOURCE_DIR}/Dependencies)
 
 add_executable(CO2Server
     Source/main.cpp
+        Server.cpp
+        Server.hpp
 )
 
 target_include_directories(CO2Server PRIVATE
