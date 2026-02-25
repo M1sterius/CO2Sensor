@@ -7,6 +7,7 @@
 #include "Debug.hpp"
 #include "../../Protocol/Protocol.hpp"
 #include "Network/Connection.hpp"
+#include "Sensor/Sensor.hpp"
 
 using namespace CO2;
 using namespace CO2::Firmware;
@@ -14,8 +15,9 @@ using namespace CO2::Firmware;
 constexpr uint32_t BUTTON_DEBOUNCE_DELAY = 50;
 constexpr uint8_t BUTTON_PIN = 18;
 
-Adafruit_BMP085 bmp;
-Connection connection;
+QueueHandle_t g_SensorQueue;
+Sensor g_Sensor;
+Connection g_Connection;
 
 volatile bool g_ButtonPressed = false;
 volatile uint32_t g_ButtonPressedTime = 0;
@@ -27,14 +29,14 @@ void NetworkTask(void* pvParameters)
 
     while (true)
     {
-        if (connection.Connected())
+        if (g_Connection.Connected())
         {
             Serial.println("Doing network tasks!");
         }
         else
         {
             Serial.println("No connection!");
-            connection.Begin();
+            g_Connection.Begin();
         }
 
         vTaskDelayUntil(&lastWakeTime, period);
@@ -56,30 +58,40 @@ void setup()
     delay(3000); // to make sure I have enough time to open serial monitor
     Serial.begin(115200);
 
-    if (!connection.Begin())
-        DEBUG_LOG("Failed to establish connection!");
-    else
-        DEBUG_LOG("Connection established!");
-        
     pinMode(BUTTON_PIN, INPUT_PULLUP);
     attachInterrupt(BUTTON_PIN, ButtonCallback, HIGH);
 
-    xTaskCreatePinnedToCore(
-        NetworkTask,
-        "NetworkTask",
-        4096,
-        NULL,
-        1,
-        NULL,
-        1
-    );
+    if (g_Connection.Begin())
+        DEBUG_LOG("Server connection established!");
+    else
+        DEBUG_LOG("Failed to establish server connection!");
+        
+    if (g_Sensor.Begin())
+        DEBUG_LOG("Sensor successfully initialized!");
+    else
+    {
+        while (true)
+        {
+            DEBUG_LOG("Sensor failed to initialize. Catastrophic error!");
+            delay(1000);
+        }
+    }
+
+    g_SensorQueue = xQueueCreate(10, sizeof(SensorData));
+    while (!g_SensorQueue)
+    {
+        DEBUG_LOG("Failed to create sensor data queue. Catastrophic error!");
+        delay(500);
+    }
+    
+    xTaskCreatePinnedToCore(NetworkTask, "NetworkTask", 4096, NULL, 1, NULL, 1);
 }
 
 void loop()
 {
     if (g_ButtonPressed)
     {
-        connection.Terminate();
+        g_Connection.Terminate();
         g_ButtonPressed = false;
     }
 }

@@ -2,6 +2,19 @@
 #include "../Debug.hpp"
 #include "../../Protocol/Protocol.hpp"
 
+static void NetworkTask(void* pvParameters)
+{
+    auto queue = static_cast<QueueHandle_t>(pvParameters);
+
+    const auto period = pdMS_TO_TICKS(1000);
+    auto lastWakeTime = xTaskGetTickCount();
+
+    while (true)
+    {
+        vTaskDelayUntil(&lastWakeTime, period);
+    }
+}
+
 namespace CO2::Firmware
 {
     Connection::Connection() = default;
@@ -9,14 +22,14 @@ namespace CO2::Firmware
 
     bool Connection::Begin()
     {
-        uint32_t cnt = 0;
+        uint32_t count = 0;
 
         WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-        while (WiFi.status() != WL_CONNECTED && cnt < MAX_CONNECT_ATTEMPTS)
+        while (WiFi.status() != WL_CONNECTED && count < MAX_CONNECT_ATTEMPTS)
         {
             DEBUG_LOG("Attempting to connect to WiFi!");
             delay(CONNECT_ATTEMPT_DELAY);
-            cnt++;
+            count++;
         }
         
         if (WiFi.status() != WL_CONNECTED)
@@ -27,12 +40,12 @@ namespace CO2::Firmware
         else
             DEBUG_LOG("WiFi connected!");
 
-        cnt = 0;
-        while (!m_WiFiClient.connect(SERVER_IP, SERVER_PORT) && cnt < MAX_CONNECT_ATTEMPTS)
+        count = 0;
+        while (!m_WiFiClient.connect(SERVER_IP, SERVER_PORT) && count < MAX_CONNECT_ATTEMPTS)
         {
             DEBUG_LOG("Attempting to connect to the server.");
             delay(CONNECT_ATTEMPT_DELAY);
-            cnt++;
+            count++;
         }
         
         if (!m_WiFiClient.connected())

@@ -17,6 +17,8 @@ namespace CO2::Firmware
         bool Connected();
         bool WiFiConnected();
         bool ServerConnected();
+
+        void BeginNetworkTask(QueueHandle_t queue);
     private:
         WiFiClient m_WiFiClient;
     };
