@@ -15,11 +15,10 @@ namespace CO2::Firmware
         void Terminate();
 
         bool Connected();
-        bool WiFiConnected();
-        bool ServerConnected();
-
-        void BeginNetworkTask(QueueHandle_t queue);
     private:
         WiFiClient m_WiFiClient;
+
+        bool ConnectWiFi();
+        bool ConnectServer();
     };
 }

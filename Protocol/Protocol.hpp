@@ -10,8 +10,10 @@ namespace CO2
     constexpr auto SERVER_IP = "192.168.1.100";
     constexpr uint16_t SERVER_PORT = 16546;
     
+    // TODO: Make constants better
     constexpr uint32_t MAX_CONNECT_ATTEMPTS = 5;
     constexpr uint32_t CONNECT_ATTEMPT_DELAY = 500;
+    constexpr uint32_t SENSOR_QUEUE_SIZE = 10;
 
     struct SensorData
     {

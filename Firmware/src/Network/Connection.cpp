@@ -22,6 +22,30 @@ namespace CO2::Firmware
 
     bool Connection::Begin()
     {
+        if (WiFi.status() != WL_CONNECTED)
+        {
+            if (!ConnectWiFi())
+                return false;
+        }
+
+        return ConnectServer();
+    }
+
+    void Connection::Terminate()
+    {
+        m_WiFiClient.stop();
+        WiFi.disconnect();
+
+        DEBUG_LOG("Connection terminated!");
+    }
+
+    bool Connection::Connected()
+    {
+        return (WiFi.status() == WL_CONNECTED) && m_WiFiClient.connected();
+    }
+
+    bool Connection::ConnectWiFi()
+    {
         uint32_t count = 0;
 
         WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -38,9 +62,16 @@ namespace CO2::Firmware
             return false;
         }
         else
+        {
             DEBUG_LOG("WiFi connected!");
+            return true;
+        }
+    }
 
-        count = 0;
+    bool Connection::ConnectServer()
+    {
+        uint32_t count = 0;
+
         while (!m_WiFiClient.connect(SERVER_IP, SERVER_PORT) && count < MAX_CONNECT_ATTEMPTS)
         {
             DEBUG_LOG("Attempting to connect to the server.");
@@ -54,20 +85,9 @@ namespace CO2::Firmware
             return false;
         }
         else
+        {
             DEBUG_LOG("Server connected!");
-
-        return true;
+            return true;
+        }
     }
-
-    void Connection::Terminate()
-    {
-        m_WiFiClient.stop();
-        WiFi.disconnect();
-
-        DEBUG_LOG("Connection terminated!");
-    }
-
-    bool Connection::Connected() { return WiFiConnected() && ServerConnected(); }
-    bool Connection::ServerConnected() { return m_WiFiClient.connected(); }
-    bool Connection::WiFiConnected() { return WiFi.status() == WL_CONNECTED; }
 }

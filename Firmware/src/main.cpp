@@ -7,6 +7,7 @@
 #include "Debug.hpp"
 #include "../../Protocol/Protocol.hpp"
 #include "Network/Connection.hpp"
+#include "Network/NetworkTask.hpp"
 #include "Sensor/Sensor.hpp"
 
 using namespace CO2;
@@ -15,33 +16,14 @@ using namespace CO2::Firmware;
 constexpr uint32_t BUTTON_DEBOUNCE_DELAY = 50;
 constexpr uint8_t BUTTON_PIN = 18;
 
-QueueHandle_t g_SensorQueue;
+/* -------------- Global instances --------------*/
 Sensor g_Sensor;
 Connection g_Connection;
+NetworkTask g_NetworkTask;
+/* -------------- Global instances --------------*/
 
 volatile bool g_ButtonPressed = false;
 volatile uint32_t g_ButtonPressedTime = 0;
-
-void NetworkTask(void* pvParameters)
-{
-    const TickType_t period = pdMS_TO_TICKS(1000);
-    TickType_t lastWakeTime = xTaskGetTickCount();
-
-    while (true)
-    {
-        if (g_Connection.Connected())
-        {
-            Serial.println("Doing network tasks!");
-        }
-        else
-        {
-            Serial.println("No connection!");
-            g_Connection.Begin();
-        }
-
-        vTaskDelayUntil(&lastWakeTime, period);
-    }
-}
 
 void ARDUINO_ISR_ATTR ButtonCallback()
 {
@@ -60,12 +42,7 @@ void setup()
 
     pinMode(BUTTON_PIN, INPUT_PULLUP);
     attachInterrupt(BUTTON_PIN, ButtonCallback, HIGH);
-
-    if (g_Connection.Begin())
-        DEBUG_LOG("Server connection established!");
-    else
-        DEBUG_LOG("Failed to establish server connection!");
-        
+    
     if (g_Sensor.Begin())
         DEBUG_LOG("Sensor successfully initialized!");
     else
@@ -77,14 +54,12 @@ void setup()
         }
     }
 
-    g_SensorQueue = xQueueCreate(10, sizeof(SensorData));
-    while (!g_SensorQueue)
-    {
-        DEBUG_LOG("Failed to create sensor data queue. Catastrophic error!");
-        delay(500);
-    }
-    
-    xTaskCreatePinnedToCore(NetworkTask, "NetworkTask", 4096, NULL, 1, NULL, 1);
+    if (g_Connection.Begin())
+        DEBUG_LOG("Server connection established!");
+    else
+        DEBUG_LOG("Failed to establish server connection!");
+
+    g_NetworkTask.Begin(g_Sensor.GetQueue(), &g_Connection);
 }
 
 void loop()
