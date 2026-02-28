@@ -55,9 +55,9 @@ void setup()
     }
 
     if (g_Connection.Begin())
-        DEBUG_LOG("Server connection established!");
+        DEBUG_LOG("Network connection established!");
     else
-        DEBUG_LOG("Failed to establish server connection!");
+        DEBUG_LOG("Failed to establish network connection!");
 
     g_NetworkTask.Begin(g_Sensor.GetQueue(), &g_Connection);
 }

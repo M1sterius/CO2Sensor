@@ -1,5 +1,9 @@
 #include "NetworkTask.hpp"
+#include "Connection.hpp"
 #include "../Debug.hpp"
+#include "../../Protocol/Protocol.hpp"
+
+#include <LittleFS.h>
 
 namespace CO2::Firmware
 {
@@ -11,7 +15,7 @@ namespace CO2::Firmware
         m_hQueue = hQueue;
         m_pConnection = pConnection;
 
-        xTaskCreate(&NetworkTask::TaskEntry, "NetworkTask", 4096, this, 1, NULL);
+        xTaskCreatePinnedToCore(&NetworkTask::TaskEntry, "NetworkTask", 4096, this, 1, nullptr, NETWORK_TASK_CORE_ID);
     }
 
     void NetworkTask::TaskEntry(void* args)
@@ -22,21 +26,38 @@ namespace CO2::Firmware
 
     void NetworkTask::Task()
     {
-        const auto period = pdMS_TO_TICKS(1000);
-        auto lastWakeTime = xTaskGetTickCount();
+        TestData sensorData;
 
         while (true)
         {
-            if (m_pConnection->Connected())
-                DEBUG_LOG("Network task!");
-            else
+            if (xQueueReceive(m_hQueue, &sensorData, portMAX_DELAY))
             {
-                DEBUG_LOG("No connection!");
-                m_pConnection->Begin();
-            }
+                static int count = 0;
 
-            vTaskDelayUntil(&lastWakeTime, period);
+                if (!m_pConnection->Connected())
+                {
+                    auto str = String("No connection. Saving to flash!") + String(count);
+
+                    DEBUG_LOG(str.c_str());
+                    m_pConnection->Reconnect();
+
+                    // Firstly, save data into flash to avoid queue overflow
+                    // then try to reconnect
+                }
+                else
+                {
+                    auto str = String("Data received ") + String(count);
+
+                    DEBUG_LOG(str.c_str());
+                    m_pConnection->Println(str.c_str());
+
+                    // Check if there's any data in flash that needs to be sent to the server
+                    // Send it first if there's any
+                    // Then send current data from the queue
+                }
+
+                count++;
+            }
         }
-        
     }
 }

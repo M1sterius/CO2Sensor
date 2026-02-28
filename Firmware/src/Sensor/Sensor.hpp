@@ -13,11 +13,12 @@ namespace CO2::Firmware
 
         bool Begin();
 
-        bool Okay();
-
         QueueHandle_t GetQueue() const { return m_Queue; }
     private:
-        QueueHandle_t m_Queue;
         Adafruit_BMP085 m_Barometer;
+        QueueHandle_t m_Queue;
+
+        static void TaskEntry(void* args);
+        void SensorTask();
     };
 }

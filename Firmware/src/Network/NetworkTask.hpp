@@ -2,10 +2,10 @@
 
 #include <Arduino.h>
 
-#include "Connection.hpp"
-
 namespace CO2::Firmware
 {
+    class Connection;
+
     class NetworkTask
     {
     public:

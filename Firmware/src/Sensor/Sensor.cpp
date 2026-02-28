@@ -1,4 +1,5 @@
 #include "Sensor.hpp"
+#include "../Debug.hpp"
 #include "../../Protocol/Protocol.hpp"
 
 namespace CO2::Firmware
@@ -8,7 +9,14 @@ namespace CO2::Firmware
 
     bool Sensor::Begin()
     {
-        m_Queue = xQueueCreate(SENSOR_QUEUE_SIZE, sizeof(SensorData));
+        if (!m_Barometer.begin())
+        {
+            DEBUG_LOG("Failed to initialize barometer sensor!");
+            return false;
+        }
+
+        xTaskCreatePinnedToCore(&Sensor::TaskEntry, "SensorTaskSensor", 4096, this, 1, nullptr, SENSOR_TASK_CORE_ID);
+        m_Queue = xQueueCreate(SENSOR_QUEUE_SIZE, sizeof(TestData));
 
         if (!m_Queue)
             return false;
@@ -17,8 +25,26 @@ namespace CO2::Firmware
         return true;
     }
 
-    bool Sensor::Okay()
+    void Sensor::TaskEntry(void* args)
     {
-        return false;
+        auto self = static_cast<Sensor*>(args);
+        self->SensorTask();
+    }
+
+    void Sensor::SensorTask()
+    {
+        const auto period = pdMS_TO_TICKS(1000);
+        auto lastWakeTime = xTaskGetTickCount();
+
+        TestData sensorData;
+
+        while (true)
+        {
+            sensorData.data1 = static_cast<uint32_t>(m_Barometer.readTemperature() * 100.0f);
+            sensorData.data2 = static_cast<uint32_t>(m_Barometer.readPressure());
+
+            xQueueSend(m_Queue, &sensorData, portMAX_DELAY);
+            vTaskDelayUntil(&lastWakeTime, period);
+        }
     }
 }
