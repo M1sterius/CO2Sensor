@@ -15,8 +15,8 @@ namespace CO2::Firmware
             return false;
         }
 
-        xTaskCreatePinnedToCore(&Sensor::TaskEntry, "SensorTaskSensor", 4096, this, 1, nullptr, SENSOR_TASK_CORE_ID);
-        m_Queue = xQueueCreate(SENSOR_QUEUE_SIZE, sizeof(TestData));
+        xTaskCreatePinnedToCore(&Sensor::TaskEntry, "SensorTask", 4096, this, 1, nullptr, SENSOR_TASK_CORE_ID);
+        m_Queue = xQueueCreate(SENSOR_QUEUE_SIZE, sizeof(SensorData));
 
         if (!m_Queue)
             return false;
@@ -36,12 +36,12 @@ namespace CO2::Firmware
         const auto period = pdMS_TO_TICKS(1000);
         auto lastWakeTime = xTaskGetTickCount();
 
-        TestData sensorData;
+        SensorData sensorData;
 
         while (true)
         {
-            sensorData.data1 = static_cast<uint32_t>(m_Barometer.readTemperature() * 100.0f);
-            sensorData.data2 = static_cast<uint32_t>(m_Barometer.readPressure());
+            sensorData.Temperature = static_cast<uint32_t>(m_Barometer.readTemperature() * 100.0f);
+            sensorData.Humidity = static_cast<uint32_t>(m_Barometer.readPressure());
 
             xQueueSend(m_Queue, &sensorData, portMAX_DELAY);
             vTaskDelayUntil(&lastWakeTime, period);

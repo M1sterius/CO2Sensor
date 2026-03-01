@@ -9,6 +9,7 @@
 #include "Network/Connection.hpp"
 #include "Network/NetworkTask.hpp"
 #include "Sensor/Sensor.hpp"
+#include "DataSaver.hpp"
 
 using namespace CO2;
 using namespace CO2::Firmware;
@@ -20,6 +21,7 @@ constexpr uint8_t BUTTON_PIN = 18;
 Sensor g_Sensor;
 Connection g_Connection;
 NetworkTask g_NetworkTask;
+DataSaver g_DataSaver;
 /* -------------- Global instances --------------*/
 
 volatile bool g_ButtonPressed = false;
@@ -37,29 +39,31 @@ void ARDUINO_ISR_ATTR ButtonCallback()
 
 void setup()
 {
-    delay(3000); // to make sure I have enough time to open serial monitor
+    vTaskDelay(pdMS_TO_TICKS(3000)); // to make sure I have enough time to open serial monitor
     Serial.begin(115200);
 
     pinMode(BUTTON_PIN, INPUT_PULLUP);
     attachInterrupt(BUTTON_PIN, ButtonCallback, HIGH);
     
-    if (g_Sensor.Begin())
+    if (g_Sensor.Begin()) {
         DEBUG_LOG("Sensor successfully initialized!");
-    else
-    {
-        while (true)
-        {
-            DEBUG_LOG("Sensor failed to initialize. Catastrophic error!");
-            delay(1000);
-        }
+    } else {
+        CATASTROPHIC_ERROR("Catastrophic error! Sensor failed to initialize."); 
     }
 
-    if (g_Connection.Begin())
-        DEBUG_LOG("Network connection established!");
-    else
-        DEBUG_LOG("Failed to establish network connection!");
+    if (g_DataSaver.Begin()) { 
+        DEBUG_LOG("Data saver successfully initialized!");
+    } else {
+        CATASTROPHIC_ERROR("Catastrophic error! Data saver failed to initialize.");
+    }
 
-    g_NetworkTask.Begin(g_Sensor.GetQueue(), &g_Connection);
+    if (g_Connection.Begin()) { 
+        DEBUG_LOG("Network connection established!");
+    } else {
+        DEBUG_LOG("Failed to establish network connection!");
+    }
+
+    g_NetworkTask.Begin(g_Sensor.GetQueue(), &g_Connection, &g_DataSaver);
 }
 
 void loop()

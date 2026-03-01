@@ -1,5 +1,6 @@
 #include "NetworkTask.hpp"
 #include "Connection.hpp"
+#include "../DataSaver.hpp"
 #include "../Debug.hpp"
 #include "../../Protocol/Protocol.hpp"
 
@@ -10,10 +11,11 @@ namespace CO2::Firmware
     NetworkTask::NetworkTask() = default;
     NetworkTask::~NetworkTask() = default;
 
-    void NetworkTask::Begin(QueueHandle_t hQueue, Connection* pConnection)
+    void NetworkTask::Begin(QueueHandle_t hQueue, Connection* pConnection, DataSaver* dataSaver)
     {
         m_hQueue = hQueue;
         m_pConnection = pConnection;
+        m_pDataSaver = dataSaver;
 
         xTaskCreatePinnedToCore(&NetworkTask::TaskEntry, "NetworkTask", 4096, this, 1, nullptr, NETWORK_TASK_CORE_ID);
     }
@@ -26,38 +28,43 @@ namespace CO2::Firmware
 
     void NetworkTask::Task()
     {
-        TestData sensorData;
+        SensorData sensorData;
 
         while (true)
         {
             if (xQueueReceive(m_hQueue, &sensorData, portMAX_DELAY))
             {
-                static int count = 0;
+                static TickType_t lastReconnectAttempt = 0;
 
                 if (!m_pConnection->Connected())
                 {
-                    auto str = String("No connection. Saving to flash!") + String(count);
+                    m_pDataSaver->Write(sensorData);
 
-                    DEBUG_LOG(str.c_str());
-                    m_pConnection->Reconnect();
-
-                    // Firstly, save data into flash to avoid queue overflow
-                    // then try to reconnect
+                    const auto now = xTaskGetTickCount();
+                    if (now - lastReconnectAttempt > pdMS_TO_TICKS(RECONNECT_ATTEMPT_INTERVAL))
+                    {
+                        lastReconnectAttempt = millis();
+                        m_pConnection->Reconnect();
+                    }
                 }
                 else
                 {
-                    auto str = String("Data received ") + String(count);
+                    static char buffer[100];
 
-                    DEBUG_LOG(str.c_str());
-                    m_pConnection->Println(str.c_str());
+                    while (m_pDataSaver->Read(buffer, sizeof(buffer)) && m_pConnection->Connected())
+                        m_pConnection->Println(buffer);
 
-                    // Check if there's any data in flash that needs to be sent to the server
-                    // Send it first if there's any
-                    // Then send current data from the queue
+                    const auto dataStr = SensorDataToString(sensorData);
+                    m_pConnection->Println(dataStr);
                 }
-
-                count++;
             }
         }
+    }
+
+    const char* NetworkTask::SensorDataToString(const SensorData& data)
+    {
+        static char buffer[100];
+        snprintf(buffer, sizeof(buffer), "%u,%u,%u,%u", data.Timestamp, data.Humidity, data.CO2PPM);
+        return buffer;
     }
 }
