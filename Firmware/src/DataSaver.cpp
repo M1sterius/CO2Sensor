@@ -19,6 +19,7 @@ namespace CO2::Firmware
         Serial.printf("FS used: %d\n", LittleFS.usedBytes());
 
         m_File = LittleFS.open("/data.txt", "rw");
+        
         if (!m_File)
         {
             DEBUG_LOG("Failed to open data file.");

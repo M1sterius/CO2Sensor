@@ -2,7 +2,6 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <ESPmDNS.h>
-#include <Adafruit_BMP085.h>
 
 #include "Debug.hpp"
 #include "../../Protocol/Protocol.hpp"

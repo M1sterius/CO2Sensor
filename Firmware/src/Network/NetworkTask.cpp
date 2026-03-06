@@ -43,7 +43,7 @@ namespace CO2::Firmware
                     const auto now = xTaskGetTickCount();
                     if (now - lastReconnectAttempt > pdMS_TO_TICKS(RECONNECT_ATTEMPT_INTERVAL))
                     {
-                        lastReconnectAttempt = millis();
+                        lastReconnectAttempt = xTaskGetTickCount();
                         m_pConnection->Reconnect();
                     }
                 }
