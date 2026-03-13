@@ -23,8 +23,6 @@ namespace CO2::Firmware
 
         static void TaskEntry(void* args);
         void Task();
-
-        static const char* SensorDataToString(const SensorData& data);
     };
 
 }

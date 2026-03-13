@@ -6,12 +6,12 @@
 namespace CO2::Firmware
 {
     constexpr auto MQ_BOARD_NAME = "ESP-32";
-    constexpr auto MQ_VOLTAGE_RESOLUTION = 3.3;
+    constexpr auto MQ_VOLTAGE_RESOLUTION = 5.0;
     constexpr auto MQ_ADC_RESOLUTION = 12;
     constexpr auto MQ_SENSOR_PIN = 34;
     constexpr auto MQ_SENSOR_TYPE = "MQ-135";
 
-    constexpr auto DHT_SENSOR_PIN = 4;
+    constexpr auto DHT_SENSOR_PIN = 32;
     constexpr auto DHT_TYPE = DHT11;
 
     Sensor::Sensor()
@@ -42,8 +42,8 @@ namespace CO2::Firmware
         m_MQ135.setRegressionMethod(1);
         m_MQ135.setA(110.47); // Magic numbers for CO2 from 'MQUnifiedsensor by Miguel Califa' official examples
         m_MQ135.setB(-2.862);
+        m_MQ135.setR0(5.0);
         m_MQ135.init();
-        m_MQ135.setR0(8.0);
 
         // Serial.print("Calibrating please wait.");
         // float calcR0 = 0;
@@ -69,7 +69,7 @@ namespace CO2::Firmware
 
     void Sensor::SensorTask()
     {
-        const auto period = pdMS_TO_TICKS(1000);
+        const auto period = pdMS_TO_TICKS(2000);
         auto lastWakeTime = xTaskGetTickCount();
 
         while (true)
@@ -79,19 +79,17 @@ namespace CO2::Firmware
             const auto temperature = m_DHT.readTemperature();
             const auto humidity = m_DHT.readHumidity();
 
-            if (isnan(temperature) || isnan(humidity))
-                DEBUG_LOG("Failed to read DHT sensor");
-            else
-            {
-                Serial.printf("T: %.2f, H: %.2f\n", temperature, humidity);
-            }
-
-            m_MQ135.update(); // Update data, the arduino will read the voltage from the analog pin
+            m_MQ135.update();
             const auto co2ppm = m_MQ135.readSensor();
-            Serial.printf("CO2: %.2f\n", co2ppm);
 
-            sensorData.Temperature = static_cast<uint32_t>(0);
-            sensorData.Humidity = static_cast<uint32_t>(0);
+            if (!isnan(temperature))
+                sensorData.Temperature = temperature;
+            
+            if (!isnan(humidity))
+                sensorData.Humidity = humidity;
+            
+            if (!isnan(co2ppm))
+                sensorData.CO2PPM = co2ppm;
 
             xQueueSend(m_Queue, &sensorData, portMAX_DELAY);
             vTaskDelayUntil(&lastWakeTime, period);

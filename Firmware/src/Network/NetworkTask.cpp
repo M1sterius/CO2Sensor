@@ -38,6 +38,7 @@ namespace CO2::Firmware
 
                 if (!m_pConnection->Connected())
                 {
+                    Serial.println(sensorData.ToString());
                     m_pDataSaver->Write(sensorData);
 
                     const auto now = xTaskGetTickCount();
@@ -52,19 +53,11 @@ namespace CO2::Firmware
                     static char buffer[100];
 
                     while (m_pDataSaver->Read(buffer, sizeof(buffer)) && m_pConnection->Connected())
-                        m_pConnection->Println(buffer);
+                        m_pConnection->Print(buffer);
 
-                    const auto dataStr = SensorDataToString(sensorData);
-                    m_pConnection->Println(dataStr);
+                    m_pConnection->Println(sensorData.ToString());
                 }
             }
         }
-    }
-
-    const char* NetworkTask::SensorDataToString(const SensorData& data)
-    {
-        static char buffer[100];
-        snprintf(buffer, sizeof(buffer), "%u,%u,%u,%u", data.Timestamp, data.Humidity, data.CO2PPM);
-        return buffer;
     }
 }

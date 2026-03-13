@@ -38,11 +38,4 @@ namespace CO2::Firmware
     {
 
     }
-
-    const char* DataSaver::SensorDataToString(const SensorData& data)
-    {
-        static char buffer[100];
-        snprintf(buffer, sizeof(buffer), "%u,%u,%u,%u", data.Timestamp, data.Humidity, data.CO2PPM);
-        return buffer;
-    }
 }

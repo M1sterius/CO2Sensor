@@ -3,10 +3,12 @@ project(CO2Server)
 
 set(CMAKE_CXX_STANDARD 20)
 set(DEPENDENCIES_DIR ${CMAKE_SOURCE_DIR}/Dependencies)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin/${CMAKE_BUILD_TYPE})
 
 add_executable(CO2Server
     Source/main.cpp
-    Server.cpp
+    Source/Server.cpp
+    Source/DataHandler.cpp
 )
 
 target_include_directories(CO2Server PRIVATE

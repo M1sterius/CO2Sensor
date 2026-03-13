@@ -19,7 +19,5 @@ namespace CO2::Firmware
         void Write(const SensorData& data);
     private:
         File m_File;
-
-        static const char* SensorDataToString(const SensorData& data);
     };
 }

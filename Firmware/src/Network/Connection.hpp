@@ -17,6 +17,7 @@ namespace CO2::Firmware
 
         bool Connected();
 
+        void Print(const char* str);
         void Println(const char* str);
     private:
         WiFiClient m_WiFiClient;
