@@ -9,6 +9,7 @@ namespace CO2
     constexpr auto WIFI_SSID = "Glazgen2";
     constexpr auto WIFI_PASSWORD = "GlaZgeN0208";
     constexpr auto SERVER_IP = "192.168.1.101";
+    constexpr auto SENSOR_DATA_STRING_TYPE = "SRD";
     constexpr uint16_t SERVER_PORT = 16546;
     
     // TODO: Make constants better
@@ -31,7 +32,7 @@ namespace CO2
 
         inline const char* ToString()
         {
-            static char buffer[100];
+            static char buffer[128];
             snprintf(buffer, sizeof(buffer), "%u,%f,%f,%f", Timestamp, Temperature, Humidity, CO2PPM);
             return buffer;
         }

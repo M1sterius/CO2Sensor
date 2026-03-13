@@ -50,14 +50,21 @@ namespace CO2::Firmware
                 }
                 else
                 {
-                    static char buffer[100];
+                    static char buffer[128];
 
                     while (m_pDataSaver->Read(buffer, sizeof(buffer)) && m_pConnection->Connected())
-                        m_pConnection->Print(buffer);
+                        m_pConnection->Println(FormatDataString((buffer)));
 
-                    m_pConnection->Println(sensorData.ToString());
+                    m_pConnection->Println(FormatDataString(sensorData.ToString()));
                 }
             }
         }
+    }
+    
+    const char* NetworkTask::FormatDataString(const char* data)
+    {
+        static char buffer[128];
+        snprintf(buffer, sizeof(buffer), "%s%u:%s", SENSOR_DATA_STRING_TYPE, strlen(data), data);
+        return buffer;
     }
 }

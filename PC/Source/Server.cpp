@@ -1,5 +1,5 @@
 #include "Server.hpp"
-#include "../Protocol/Protocol.hpp"
+#include "Protocol.hpp"
 
 #include "fmt/format.h"
 
@@ -103,8 +103,12 @@ namespace CO2::PC
                 size_t pos = 0;
                 while ((pos = self->m_StringBuffer.find('\n')) != std::string::npos)
                 {
-                    const auto message = self->m_StringBuffer.substr(0, pos);
+                    auto message = self->m_StringBuffer.substr(0, pos);
                     self->m_StringBuffer.erase(0, pos + 1);
+
+                    // handle CRLF line endings coming from esp32
+                    if (!message.empty() && message.back() == '\r')
+                        message.pop_back();
 
                     self->m_MessageQueue.push(message);
                 }

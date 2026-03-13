@@ -33,13 +33,13 @@ namespace CO2::Firmware
         return WiFi.isConnected() && m_WiFiClient.connected();
     }
 
-    void Connection::Print(const char *str)
+    void Connection::Print(const char* str)
     {
         if (m_WiFiClient.connected())
             m_WiFiClient.print(str);
     }
 
-    void Connection::Println(const char *str)
+    void Connection::Println(const char* str)
     {
         if (m_WiFiClient.connected())
             m_WiFiClient.println(str);

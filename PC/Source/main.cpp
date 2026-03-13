@@ -4,16 +4,19 @@
 
 #include "Server.hpp"
 #include "Protocol.hpp"
+#include "DataHandler.hpp"
 
-#include <iostream>
 #include <string>
+#include <iostream>
 
 int32_t main(int32_t argc, char** argv)
 {
-    const auto server = CO2::PC::Server::Make([](const std::string& msg)
-    {
-        std::cout << msg << '\n';
-    });
+    auto dataHandler = CO2::PC::DataHandler();
 
+    const std::function callback = [&dataHandler](const std::string& message){
+        dataHandler.Parse(message);
+    };
+
+    const auto server = CO2::PC::Server::Make(callback);
     server->Run();
 }

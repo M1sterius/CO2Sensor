@@ -9,6 +9,7 @@ add_executable(CO2Server
     Source/main.cpp
     Source/Server.cpp
     Source/DataHandler.cpp
+    Source/Utilities/Utilities.cpp
 )
 
 target_include_directories(CO2Server PRIVATE

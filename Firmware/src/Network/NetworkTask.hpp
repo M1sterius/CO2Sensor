@@ -23,6 +23,8 @@ namespace CO2::Firmware
 
         static void TaskEntry(void* args);
         void Task();
+
+        const char* FormatDataString(const char* data);
     };
 
 }
