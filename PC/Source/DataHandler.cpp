@@ -96,6 +96,6 @@ namespace CO2::PC
         m_CO2Avg.Push(sensorData.CO2PPM);
 
         fmt::println("\r\r\rReadings: {}, Bad readings: {}.", m_Readings, m_BadReadings);
-        fmt::println("Temp: {:.3f}, Hum: {:.3f}, CO2: {:.3f}.", m_TempAvg.GetAvg(), m_HumidityAvg.GetAvg(), m_CO2Avg.GetAvg());
+        fmt::println("Temp: {:.1f}, Hum: {:.1f}, CO2: {:.2f}.", m_TempAvg.GetAvg(), m_HumidityAvg.GetAvg(), m_CO2Avg.GetAvg());
     }
 }

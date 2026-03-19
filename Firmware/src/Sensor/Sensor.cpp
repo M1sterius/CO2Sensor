@@ -1,7 +1,6 @@
 #include "Sensor.hpp"
-#include "../Debug.hpp"
+#include "Utilities/Debug.hpp"
 #include "../../Protocol/Protocol.hpp"
-
 
 namespace CO2::Firmware
 {
@@ -24,7 +23,6 @@ namespace CO2::Firmware
         InitMQ135();
         m_DHT.begin();
 
-        xTaskCreatePinnedToCore(&Sensor::TaskEntry, "SensorTask", 4096, this, 1, nullptr, SENSOR_TASK_CORE_ID);
         m_Queue = xQueueCreate(SENSOR_QUEUE_SIZE, sizeof(SensorData));
 
         if (!m_Queue)
@@ -33,8 +31,19 @@ namespace CO2::Firmware
             return false;
         }
 
-        // TODO: Begin sensors. If any sensor fails, indicate a catastrophic error
         return true;
+    }
+
+    void Sensor::BeginTask()
+    {
+        xTaskCreatePinnedToCore(&Sensor::TaskEntry, "SensorTask", 4096, this, 1, nullptr, SENSOR_TASK_CORE_ID);
+    }
+
+    void Sensor::GetDisplayStats(float& temp, float& hum, float& co2)
+    {
+        temp = m_TempAvg.GetAvg();
+        hum = m_HumAvg.GetAvg();
+        co2 = m_CO2Avg.GetAvg();
     }
 
     void Sensor::InitMQ135()
@@ -69,7 +78,7 @@ namespace CO2::Firmware
 
     void Sensor::SensorTask()
     {
-        const auto period = pdMS_TO_TICKS(2000);
+        const auto period = pdMS_TO_TICKS(SENSOR_READ_DELAY);
         auto lastWakeTime = xTaskGetTickCount();
 
         while (true)
@@ -90,6 +99,10 @@ namespace CO2::Firmware
             
             if (!isnan(co2ppm))
                 sensorData.CO2PPM = co2ppm;
+
+            m_TempAvg.Push(temperature);
+            m_HumAvg.Push(humidity);
+            m_CO2Avg.Push(co2ppm);
 
             xQueueSend(m_Queue, &sensorData, portMAX_DELAY);
             vTaskDelayUntil(&lastWakeTime, period);

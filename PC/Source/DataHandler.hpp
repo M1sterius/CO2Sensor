@@ -22,9 +22,9 @@ namespace CO2::PC
     private:
         uint32_t m_Readings = 0;
         uint32_t m_BadReadings = 0;
-        RunningAvgHelper<float, 10> m_TempAvg;
-        RunningAvgHelper<float, 10> m_HumidityAvg;
-        RunningAvgHelper<float, 10> m_CO2Avg;
+        RunningAvgHelper<float, 5> m_TempAvg;
+        RunningAvgHelper<float, 5> m_HumidityAvg;
+        RunningAvgHelper<float, 5> m_CO2Avg;
 
         void ProcessSensorData(const SensorData& sensorData);
     };

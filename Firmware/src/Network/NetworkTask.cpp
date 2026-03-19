@@ -1,7 +1,7 @@
 #include "NetworkTask.hpp"
 #include "Connection.hpp"
 #include "../DataSaver.hpp"
-#include "../Debug.hpp"
+#include "Utilities/Debug.hpp"
 #include "../../Protocol/Protocol.hpp"
 
 #include <LittleFS.h>
@@ -42,7 +42,7 @@ namespace CO2::Firmware
                     m_pDataSaver->Write(sensorData);
 
                     const auto now = xTaskGetTickCount();
-                    if (now - lastReconnectAttempt > pdMS_TO_TICKS(RECONNECT_ATTEMPT_INTERVAL))
+                    if (now - lastReconnectAttempt > pdMS_TO_TICKS(RECONNECT_ATTEMPT_DELAY))
                     {
                         lastReconnectAttempt = xTaskGetTickCount();
                         m_pConnection->Reconnect();

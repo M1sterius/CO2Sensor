@@ -1,5 +1,5 @@
 #include "DataSaver.hpp"
-#include "Debug.hpp"
+#include "Utilities/Debug.hpp"
 #include "../../Protocol/Protocol.hpp"
 
 namespace CO2::Firmware
@@ -14,9 +14,6 @@ namespace CO2::Firmware
             DEBUG_LOG("Failed to initialize LittleFS.");
             return false;
         }
-
-        Serial.printf("FS total: %d\n", LittleFS.totalBytes());
-        Serial.printf("FS used: %d\n", LittleFS.usedBytes());
 
         m_File = LittleFS.open("/data.txt", "rw");
         

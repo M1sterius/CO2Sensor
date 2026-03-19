@@ -70,16 +70,18 @@ namespace CO2::PC
 
     void Server::StartTimeoutCheck()
     {
-        m_TimeoutTimer.expires_after(std::chrono::milliseconds(MAX_SENSOR_INTERVAL * 2));
+        constexpr auto TIMEOUT_TIME = static_cast<uint32_t>(SENSOR_READ_DELAY * 1.5);
+
+        m_TimeoutTimer.expires_after(std::chrono::milliseconds(TIMEOUT_TIME));
 
         auto self = shared_from_this();
-        m_TimeoutTimer.async_wait([self](const asio::error_code& ec)
+        m_TimeoutTimer.async_wait([TIMEOUT_TIME, self](const asio::error_code& ec)
         {
             if (ec)
                 return;
 
             if (const auto now = std::chrono::steady_clock::now();
-                now - self->m_LastPacket > std::chrono::milliseconds(MAX_SENSOR_INTERVAL * 2))
+                now - self->m_LastPacket > std::chrono::milliseconds(TIMEOUT_TIME))
             {
                 fmt::println("[SERVER] Client timed out!");
                 self->Disconnect();

@@ -1,5 +1,5 @@
 #include "Connection.hpp"
-#include "../Debug.hpp"
+#include "Utilities/Debug.hpp"
 #include "../../Protocol/Protocol.hpp"
 
 namespace CO2::Firmware
