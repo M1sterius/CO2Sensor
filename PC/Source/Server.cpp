@@ -18,6 +18,8 @@ namespace CO2::PC
 
     Server::~Server()
     {
+        Disconnect();
+
         m_Context.stop();
         if (m_Worker.joinable())
             m_Worker.join();

@@ -83,22 +83,26 @@ namespace CO2::Firmware
 
         while (true)
         {
-            SensorData sensorData;
-
             const auto temperature = m_DHT.readTemperature();
             const auto humidity = m_DHT.readHumidity();
 
             m_MQ135.update();
             const auto co2ppm = m_MQ135.readSensor();
 
-            if (!isnan(temperature))
-                sensorData.Temperature = temperature;
+            // if (!isnan(temperature))
+            //     sensorData.Temperature = temperature;
             
-            if (!isnan(humidity))
-                sensorData.Humidity = humidity;
+            // if (!isnan(humidity))
+            //     sensorData.Humidity = humidity;
             
-            if (!isnan(co2ppm))
-                sensorData.CO2PPM = co2ppm;
+            // if (!isnan(co2ppm))
+            //     sensorData.CO2PPM = co2ppm;
+
+            SensorData sensorData;
+            sensorData.Timestamp = time(nullptr);
+            sensorData.Temperature = temperature;
+            sensorData.Humidity = humidity;
+            sensorData.CO2PPM = co2ppm;
 
             m_TempAvg.Push(temperature);
             m_HumAvg.Push(humidity);

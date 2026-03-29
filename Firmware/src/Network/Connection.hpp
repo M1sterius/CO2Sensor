@@ -15,7 +15,7 @@ namespace CO2::Firmware
         void Terminate();
         void Reconnect();
 
-        bool Connected();
+        bool IsConnected();
 
         void Print(const char* str);
         void Println(const char* str);

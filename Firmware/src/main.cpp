@@ -40,43 +40,44 @@ void ARDUINO_ISR_ATTR ButtonCallback()
 
 void FatalError(const char* text, const int code)
 {
+    auto& disp = g_Display.Get();
+
     while (true)
     {
         Serial.printf("Fatal error! Code: %i. %s\n", code, text);
-        g_Display.ClearPrintf("Fatal error!\nCode: %i", code);
-        vTaskDelay(pdMS_TO_TICKS(1000));
+
+        disp.clear();
+
+        disp.setCursor(0, 0);
+        disp.print("Fatal error!");
+
+        disp.setCursor(0, 1);
+        disp.printf("Code: %i", code);
+
+        vTaskDelay(pdMS_TO_TICKS(2000));
     }
 }
 
 void setup()
 {
-    Serial.begin(115200);
+    Serial.begin(SERIAL_BAUD);
     g_Display.Begin();
 
     g_Display.ClearPrintf("Starting up...");
+    vTaskDelay(pdMS_TO_TICKS(3000)); // TODO: Remove. Only for debug
     
-    if (g_Sensor.Begin()) {
+    if (g_Sensor.Begin())
         DEBUG_LOG("Sensor successfully initialized!");
-    } else {
-        CATASTROPHIC_ERROR("Catastrophic error! Sensor failed to initialize."); 
-    }
+    else
+        FatalError("Sensor failed to initialize.", 10);
 
-    if (g_DataSaver.Begin()) { 
+    if (g_DataSaver.Begin())
         DEBUG_LOG("Data saver successfully initialized!");
-    } else {
-        CATASTROPHIC_ERROR("Catastrophic error! Data saver failed to initialize.");
-    }
+    else
+        FatalError("Data saver failed to initialize.", 11);
 
     g_Display.ClearPrintf("Connecting...");
-    if (g_Connection.Begin()) { 
-        DEBUG_LOG("Network connection established!");
-        g_Display.ClearPrintf("Connected!");
-    } else {
-        g_Display.ClearPrintf("No connection!");
-        DEBUG_LOG("Failed to establish network connection!");
-    }
-
-    vTaskDelay(pdMS_TO_TICKS(200));
+    g_Connection.Begin();
 
     pinMode(BUTTON_PIN, INPUT_PULLUP);
     attachInterrupt(BUTTON_PIN, ButtonCallback, HIGH);
@@ -95,15 +96,7 @@ void loop()
 
     static float temp, hum, co2;
     g_Sensor.GetDisplayStats(temp, hum, co2);
-
-    auto& disp = g_Display.Get();
-    disp.clear();
-    
-    disp.setCursor(0, 0);
-    disp.printf("CO2: %.2f PPM", co2);
-
-    disp.setCursor(0, 1);
-    disp.printf("T: %.1f C, H: %.1f", temp, hum);
+    g_Display.DrawDashboard(temp, hum, co2);
 
     vTaskDelay(pdMS_TO_TICKS(2000));
 }

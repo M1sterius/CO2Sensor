@@ -41,7 +41,8 @@ namespace CO2::PC
         size_t dataLength = 0;
         try {
             dataLength = std::stoull(header.substr(3));
-        } catch (const std::exception& e)
+        }
+        catch (const std::exception& e)
         {
             fmt::println("Parsing error! Failed to parse data length '{}'.", e.what());
             return;

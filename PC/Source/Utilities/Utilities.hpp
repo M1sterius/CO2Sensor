@@ -13,5 +13,7 @@ namespace CO2
 
         static std::string CurrentDate();
         static std::chrono::year_month_day ParseDate(const std::string& date);
+
+        static std::string TimestampToDate(const time_t timestamp);
     };
 }

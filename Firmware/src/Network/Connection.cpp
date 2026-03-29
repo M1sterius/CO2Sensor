@@ -28,7 +28,7 @@ namespace CO2::Firmware
         m_WiFiClient.connect(SERVER_IP, SERVER_PORT);
     }
 
-    bool Connection::Connected()
+    bool Connection::IsConnected()
     {
         return WiFi.isConnected() && m_WiFiClient.connected();
     }
@@ -64,7 +64,19 @@ namespace CO2::Firmware
         }
         else
         {
-            DEBUG_LOG("WiFi connected!");
+            DEBUG_LOG("WiFi successfully connected!");
+            DEBUG_LOG("Configuring time via NTP.");
+            configTime(0, 0, NTP_SERVER);
+
+            DEBUG_LOG("NTP request sent, awaiting time synchronization.");
+            time_t now = time(nullptr);
+            while (now < 100000) 
+            {
+                delay(100);
+                now = time(nullptr);
+            }
+            DEBUG_LOG("Time successfully configured!");
+
             return true;
         }
     }
@@ -87,7 +99,7 @@ namespace CO2::Firmware
         }
         else
         {
-            DEBUG_LOG("Server connected!");
+            DEBUG_LOG("Server successfully connected!");
             return true;
         }
     }

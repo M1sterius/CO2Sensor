@@ -17,9 +17,9 @@ namespace CO2::Firmware
 
         void Begin(QueueHandle_t hQueue, Connection* pConnection, DataSaver* dataSaver);
     private:
-        QueueHandle_t m_hQueue;
-        Connection* m_pConnection;
-        DataSaver* m_pDataSaver;
+        QueueHandle_t m_hQueue{nullptr};
+        Connection* m_pConnection{nullptr};
+        DataSaver* m_pDataSaver{nullptr};
 
         static void TaskEntry(void* args);
         void Task();

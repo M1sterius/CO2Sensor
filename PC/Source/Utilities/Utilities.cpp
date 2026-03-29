@@ -37,4 +37,14 @@ namespace CO2
 
         return std::chrono::year{y}/m/d;
     }
+
+    std::string Utilities::TimestampToDate(const time_t timestamp)
+    {
+        tm* ti = localtime(&timestamp);
+
+        char date[11];
+        strftime(date, sizeof(date), "%d-%m-%Y", ti);
+
+        return date;
+    }
 }

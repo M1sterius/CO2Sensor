@@ -29,9 +29,14 @@ namespace CO2::Firmware
         m_LCD.print(buffer);
     }
 
-    void Display::DrawDashboard(const float ppm, const float temp, const float humidity)
+    void Display::DrawDashboard(const float temp, const float hum, const float co2)
     {
         m_LCD.clear();
+
         m_LCD.setCursor(0, 0);
+        m_LCD.printf("CO2: %.2f PPM", co2);
+
+        m_LCD.setCursor(0, 1);
+        m_LCD.printf("T: %.1f C, H: %.1f", temp, hum);
     }
 }

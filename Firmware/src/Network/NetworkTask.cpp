@@ -36,9 +36,9 @@ namespace CO2::Firmware
             {
                 static TickType_t lastReconnectAttempt = 0;
 
-                if (!m_pConnection->Connected())
+                if (!m_pConnection->IsConnected())
                 {
-                    Serial.println(sensorData.ToString());
+                    Serial.println(sensorData.ToString()); // TODO: Remove. For debug only
                     m_pDataSaver->Write(sensorData);
 
                     const auto now = xTaskGetTickCount();
@@ -52,8 +52,8 @@ namespace CO2::Firmware
                 {
                     static char buffer[128];
 
-                    while (m_pDataSaver->Read(buffer, sizeof(buffer)) && m_pConnection->Connected())
-                        m_pConnection->Println(FormatDataString((buffer)));
+                    while (m_pDataSaver->Read(buffer, sizeof(buffer)) && m_pConnection->IsConnected())
+                        m_pConnection->Println(FormatDataString(buffer));
 
                     m_pConnection->Println(FormatDataString(sensorData.ToString()));
                 }

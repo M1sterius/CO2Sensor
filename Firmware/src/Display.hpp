@@ -15,7 +15,7 @@ namespace CO2::Firmware
         LiquidCrystal_I2C& Get() { return m_LCD; }
     
         void ClearPrintf(const char* fmt, ...);
-        void DrawDashboard(const float ppm, const float temp, const float humidity);
+        void DrawDashboard(const float temp, const float hum, const float co2);
     private:
         LiquidCrystal_I2C m_LCD;
     };
