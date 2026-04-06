@@ -50,21 +50,23 @@ namespace CO2::Firmware
                 }
                 else
                 {
-                    static char buffer[128];
+                    SensorData savedSensorData;
 
-                    while (m_pDataSaver->Read(buffer, sizeof(buffer)) && m_pConnection->IsConnected())
-                        m_pConnection->Println(FormatDataString(buffer));
+                    // Send readings gathered when there was no server connection
+                    while (m_pDataSaver->Read(savedSensorData) && m_pConnection->IsConnected())
+                        m_pConnection->Println(FormatDataString(savedSensorData.ToString(), OLD_SENSOR_READING_TAG));
 
-                    m_pConnection->Println(FormatDataString(sensorData.ToString()));
+                    // Send the latest reading
+                    m_pConnection->Println(FormatDataString(sensorData.ToString(), NEW_SENSOR_READING_TAG));
                 }
             }
         }
     }
     
-    const char* NetworkTask::FormatDataString(const char* data)
+    const char* NetworkTask::FormatDataString(const char* data, const char* tag)
     {
         static char buffer[128];
-        snprintf(buffer, sizeof(buffer), "%s%u:%s", SENSOR_DATA_STRING_TYPE, strlen(data), data);
+        snprintf(buffer, sizeof(buffer), "%s%u:%s", tag, strlen(data), data);
         return buffer;
     }
 }

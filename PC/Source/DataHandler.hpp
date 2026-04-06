@@ -27,5 +27,8 @@ namespace CO2::PC
         RunningAvgHelper<float, 5> m_CO2Avg;
 
         void ProcessSensorData(const SensorData& sensorData);
+
+        void ProcessNewReading(const SensorData& sensorData);
+        void ProcessOldReading(const SensorData& sensorData);
     };
 }

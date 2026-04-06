@@ -88,6 +88,7 @@ namespace CO2::Firmware
         while (!m_WiFiClient.connect(SERVER_IP, SERVER_PORT) && count < MAX_CONNECT_ATTEMPTS)
         {
             DEBUG_LOG("Attempting to connect to the server.");
+            m_WiFiClient.stop();
             delay(CONNECT_ATTEMPT_DELAY);
             count++;
         }

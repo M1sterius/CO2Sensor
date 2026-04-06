@@ -3,15 +3,27 @@
 
 #include "fmt/format.h"
 
+#include <unordered_set>
+
 namespace CO2::PC
 {
     static bool VerifyRange(const float value, const float min, const float max)
     {
-        if (value == 0.0)
-            return false;
-        if (value < min || value > max)
+        if (isnan(value) || value < min || value > max)
             return false;
         return true;
+    }
+
+    static bool VerifyTag(const std::string& tag)
+    {
+        static std::unordered_set<std::string> allowedTags;
+        if (allowedTags.empty())
+        {
+            allowedTags.insert(NEW_SENSOR_READING_TAG);
+            allowedTags.insert(OLD_SENSOR_READING_TAG);
+        }
+
+        return allowedTags.contains(tag);
     }
 
     DataHandler::DataHandler() = default;
@@ -30,11 +42,10 @@ namespace CO2::PC
         const auto& header = tokens[0];
         const auto& data = tokens[1];
 
-        // Only one message type is currently supported
-        const auto messageType = header.substr(0, 3);
-        if (messageType != SENSOR_DATA_STRING_TYPE)
+        const auto tag = header.substr(0, 3);
+        if (!VerifyTag(tag))
         {
-            fmt::println("Parsing error! Invalid message type '{}'.", messageType);
+            fmt::println("Parsing error! Invalid message tag '{}'.", tag);
             return;
         }
 
@@ -54,11 +65,11 @@ namespace CO2::PC
             return;
         }
 
-        const auto readings = Utilities::SplitString(data, ',');
+        const auto readingTokens = Utilities::SplitString(data, ',');
 
-        if (readings.size() != 4)
+        if (readingTokens.size() != 4)
         {
-            fmt::println("Parsing error! Readings count isn't equal to 4.");
+            fmt::println("Parsing error! Tokens count isn't equal to 4.");
             return;
         }
 
@@ -66,18 +77,21 @@ namespace CO2::PC
 
         try
         {
-            sensorData.Timestamp = std::stoul(readings[0]);
-            sensorData.Temperature = std::stof(readings[1]);
-            sensorData.Humidity = std::stof(readings[2]);
-            sensorData.CO2PPM = std::stof(readings[3]);
+            sensorData.Timestamp = std::stoul(readingTokens[0]);
+            sensorData.Temperature = std::stof(readingTokens[1]);
+            sensorData.Humidity = std::stof(readingTokens[2]);
+            sensorData.CO2PPM = std::stof(readingTokens[3]);
         }
         catch (const std::exception& e)
         {
-            fmt::println("Parsing error! Failed to parse one of data reading '{}'.", e.what());
+            fmt::println("Parsing error! Failed to parse a token '{}'.", e.what());
             return;
         }
 
-        ProcessSensorData(sensorData);
+        if (tag == NEW_SENSOR_READING_TAG)
+            ProcessNewReading(sensorData);
+        else if (tag == OLD_SENSOR_READING_TAG)
+            ProcessOldReading(sensorData);
     }
 
     void DataHandler::ProcessSensorData(const SensorData& sensorData)
@@ -98,5 +112,17 @@ namespace CO2::PC
 
         fmt::println("\r\r\rReadings: {}, Bad readings: {}.", m_Readings, m_BadReadings);
         fmt::println("Temp: {:.1f}, Hum: {:.1f}, CO2: {:.2f}.", m_TempAvg.GetAvg(), m_HumidityAvg.GetAvg(), m_CO2Avg.GetAvg());
+    }
+
+    void DataHandler::ProcessNewReading(const SensorData& sensorData)
+    {
+        const auto str = sensorData.ToString();
+        fmt::println("NEW: {}", str);
+    }
+
+    void DataHandler::ProcessOldReading(const SensorData& sensorData)
+    {
+        const auto str = sensorData.ToString();
+        fmt::println("OLD: {}", str);
     }
 }

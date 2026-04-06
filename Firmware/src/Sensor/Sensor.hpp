@@ -3,8 +3,7 @@
 #include "Utilities/RunningAvgHelper.hpp"
 
 #include <Arduino.h>
-#include <MQUnifiedsensor.h>
-#include <DHT.h>
+#include <SensirionI2CScd4x.h>
 
 namespace CO2::Firmware
 {
@@ -25,10 +24,8 @@ namespace CO2::Firmware
         RunningAvgHelper<float, 5> m_CO2Avg;
 
         QueueHandle_t m_Queue;
-        MQUnifiedsensor m_MQ135;
-        DHT m_DHT;
+        SensirionI2cScd4x m_SCD40;
 
-        void InitMQ135();
         static void TaskEntry(void* args);
         void SensorTask();
     };

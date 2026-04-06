@@ -5,21 +5,18 @@
 #include "Server.hpp"
 #include "Protocol.hpp"
 #include "DataHandler.hpp"
-#include "Utilities/Utilities.hpp"
 
 #include <string>
 #include <iostream>
 
 int32_t main(int32_t argc, char** argv)
 {
-    // auto dataHandler = CO2::PC::DataHandler();
-    //
-    // const std::function callback = [&dataHandler](const std::string& message){
-    //     dataHandler.Parse(message);
-    // };
-    //
-    // const auto server = CO2::PC::Server::Make(callback);
-    // server->Run();
+    auto dataHandler = CO2::PC::DataHandler();
 
-    std::cout << NAN;
+    const std::function callback = [&dataHandler](const std::string& message){
+        dataHandler.Parse(message);
+    };
+
+    const auto server = CO2::PC::Server::Make(callback);
+    server->Run();
 }

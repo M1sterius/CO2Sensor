@@ -15,7 +15,7 @@ namespace CO2::Firmware
 
         bool Begin();
 
-        bool Read(char* buffer, const uint32_t bufferSize);
+        bool Read(SensorData& sensorData);
         void Write(const SensorData& data);
     private:
         static constexpr uint32_t CIRCULAR_BUFFER_SIZE = 57600;

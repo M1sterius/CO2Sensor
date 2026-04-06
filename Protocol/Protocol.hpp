@@ -9,15 +9,17 @@ namespace CO2
     constexpr auto NTP_SERVER = "pool.ntp.org";
     constexpr auto WIFI_SSID = "Glazgen2";
     constexpr auto WIFI_PASSWORD = "GlaZgeN0208";
-    constexpr auto SERVER_IP = "192.168.1.102";
+    constexpr auto SERVER_IP = "192.168.1.101";
     constexpr auto SENSOR_DATA_STRING_TYPE = "SRD";
+    constexpr auto NEW_SENSOR_READING_TAG = "SRD";
+    constexpr auto OLD_SENSOR_READING_TAG = "SRH";
     constexpr uint16_t SERVER_PORT = 16546;
     constexpr uint32_t SERIAL_BAUD = 115200;
     
     constexpr uint32_t MAX_CONNECT_ATTEMPTS = 4;
     constexpr uint32_t CONNECT_ATTEMPT_DELAY = 200;
     constexpr uint32_t RECONNECT_ATTEMPT_DELAY = 10000;
-    constexpr uint32_t SENSOR_READ_DELAY = 3000;
+    constexpr uint32_t SENSOR_READ_DELAY = 5000;
     constexpr uint32_t SENSOR_QUEUE_SIZE = 16;
     constexpr uint32_t SENSOR_TASK_CORE_ID = 1;
     constexpr uint32_t NETWORK_TASK_CORE_ID = 0;
@@ -31,7 +33,7 @@ namespace CO2
         float Humidity{0};
         float CO2PPM{0};
 
-        inline const char* ToString()
+        inline const char* ToString() const
         {
             static char buffer[128];
             snprintf(buffer, sizeof(buffer), "%u,%f,%f,%f", Timestamp, Temperature, Humidity, CO2PPM);
