@@ -4,12 +4,29 @@
 
 namespace CO2::Firmware
 {
-    struct BufferState
+    bool DataSaver::BatchState::OpenFiles()
     {
-        uint32_t Head{0};
-        uint32_t Tail{0};
-        uint32_t Count{0};
-    };
+        if (BufferFile && ReadingsFile)
+            return true;
+
+        BufferFile = LittleFS.open(SENSOR_BUFFER_FILE, "r+");
+        ReadingsFile = LittleFS.open(SENSOR_READINGS_FILE, "r");
+
+        if (!BufferFile || !ReadingsFile)
+        {
+            DEBUG_LOG("Failed to open files in BatchState!");
+            CloseFiles();
+            return false;
+        }
+
+        return true;
+    }
+
+    void DataSaver::BatchState::CloseFiles()
+    {
+        if (BufferFile) BufferFile.close();
+        if (ReadingsFile) ReadingsFile.close();
+    }
 
     DataSaver::DataSaver() = default;
     DataSaver::~DataSaver() = default;
@@ -61,105 +78,68 @@ namespace CO2::Firmware
 
     bool DataSaver::Read(SensorData& sensorData)
     {
-        constexpr uint32_t MAX_PER_BATCH = 50;
-        static uint32_t currentBatch = 0;
-        static File bufferFile{};
-        static File dataFile{};
-
-        if (currentBatch >= MAX_PER_BATCH)
+        if (m_CurrentBatch.Count > MAX_READINGS_PER_BATCH)
         {
-            currentBatch = 0;
-            bufferFile.close();
-            bufferFile = {};
-            dataFile.close();
-            dataFile = {};
+            m_CurrentBatch.CloseFiles();
+            m_CurrentBatch = BatchState();
             return false;
         }
 
-        if (!bufferFile)
-            bufferFile = LittleFS.open(SENSOR_BUFFER_FILE, "r+");
-        if (!dataFile)
-            dataFile = LittleFS.open(SENSOR_READINGS_FILE, "r");
-
-        if (!bufferFile)
-        {
-            DEBUG_LOG("Failed to open buffer file to read circular buffer state!");
+        if (!m_CurrentBatch.OpenFiles())
             return false;
-        }
 
-        if (!dataFile)
-        {
-            DEBUG_LOG("Failed to open data file to read sensor readings!");
-            return false;
-        }
-
+        // Read buffer state
         BufferState bufferState{};
-        bufferFile.seek(0, SeekSet);
-        bufferFile.readBytes(reinterpret_cast<char*>(&bufferState), sizeof(bufferState));
+        m_CurrentBatch.BufferFile.seek(0, SeekSet);
+        m_CurrentBatch.BufferFile.readBytes(reinterpret_cast<char*>(&bufferState), sizeof(BufferState));
 
         if (bufferState.Count == 0)
+        {
+            m_CurrentBatch.CloseFiles();
             return false;
+        }
 
-        const auto pos = bufferState.Tail * sizeof(SensorData);
+        m_CurrentBatch.ReadingsFile.seek(bufferState.Tail * sizeof(SensorData), SeekSet);
+        m_CurrentBatch.ReadingsFile.readBytes(reinterpret_cast<char*>(&sensorData), sizeof(SensorData));
 
         bufferState.Tail = (bufferState.Tail + 1) % CIRCULAR_BUFFER_SIZE;
         bufferState.Count--;
-        bufferFile.seek(0, SeekSet);
-        bufferFile.write(reinterpret_cast<uint8_t*>(&bufferState), sizeof(BufferState));
+        m_CurrentBatch.Count++;
 
-        dataFile.seek(pos, SeekSet);
-        dataFile.readBytes(reinterpret_cast<char*>(&sensorData), sizeof(SensorData));
+        // Write buffer state
+        m_CurrentBatch.BufferFile.seek(0, SeekSet);
+        m_CurrentBatch.BufferFile.write(reinterpret_cast<uint8_t*>(&bufferState), sizeof(BufferState));
+        m_CurrentBatch.BufferFile.flush();
 
-        currentBatch++;
         return true;
     }
 
     void DataSaver::Write(const SensorData& data)
     {
-        auto readingsFile = LittleFS.open(SENSOR_READINGS_FILE, "r+");
-        if (!readingsFile)
-        {
-            DEBUG_LOG("Failed to open sensor readings file for sensor reading write!");
-            return;
-        }
-
-        readingsFile.seek(GetWritePos(), SeekSet);
-        readingsFile.write(reinterpret_cast<const uint8_t*>(&data), sizeof(data));
-        readingsFile.close();
-
-        UpdateCircularBuffer();
-    }
-
-    uint32_t DataSaver::GetWritePos()
-    {
-        auto bufferFile = LittleFS.open(SENSOR_BUFFER_FILE, "r");
-        if (!bufferFile)
-        {
-            DEBUG_LOG("Failed to open sensor buffer file for reading circular buffer head!");
-            return 0;
-        }
-
-        uint32_t head = 0;
-
-        bufferFile.seek(0, SeekSet);
-        bufferFile.readBytes(reinterpret_cast<char*>(&head), sizeof(head));
-        bufferFile.close();
-
-        return head * sizeof(SensorData);
-    }
-
-    void DataSaver::UpdateCircularBuffer()
-    {
         auto bufferFile = LittleFS.open(SENSOR_BUFFER_FILE, "r+");
-        if (!bufferFile)
+        auto readingsFile = LittleFS.open(SENSOR_READINGS_FILE, "r+");
+
+        if (!bufferFile || !readingsFile)
         {
-            DEBUG_LOG("Failed to open sensor buffer file for updating circular buffer");
+            DEBUG_LOG("Failed to open files to save a sensor reading!");
+
+            if (bufferFile) bufferFile.close();
+            if (readingsFile) readingsFile.close();
+
             return;
         }
 
+        // Read buffer state
         BufferState bufferState{};
-        bufferFile.readBytes(reinterpret_cast<char*>(&bufferState), sizeof(bufferState));
+        bufferFile.seek(0, SeekSet);
+        bufferFile.readBytes(reinterpret_cast<char*>(&bufferState), sizeof(BufferState));
 
+        // Write sensor reading to the file
+        const auto readingWritePos = bufferState.Head * sizeof(SensorData);
+        readingsFile.seek(readingWritePos, SeekSet);
+        readingsFile.write(reinterpret_cast<const uint8_t*>(&data), sizeof(SensorData));
+
+        // Update buffer state
         if (bufferState.Count < CIRCULAR_BUFFER_SIZE)
             bufferState.Count++;
         else
@@ -167,9 +147,11 @@ namespace CO2::Firmware
 
         bufferState.Head = (bufferState.Head + 1) % CIRCULAR_BUFFER_SIZE;
 
-        Serial.printf("Head: %u Tail: %u Count: %u\n", bufferState.Head, bufferState.Tail, bufferState.Count);
+        // Write updated buffer state to the file
         bufferFile.seek(0, SeekSet);
         bufferFile.write(reinterpret_cast<uint8_t*>(&bufferState), sizeof(bufferState));
+
         bufferFile.close();
+        readingsFile.close();
     }
 }

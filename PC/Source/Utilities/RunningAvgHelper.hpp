@@ -32,6 +32,9 @@ namespace CO2::PC
 
         T GetAvg() const
         {
+            if (m_Sum == 0 || m_Values.size() == 0)
+                return 0;
+
             return m_Sum / static_cast<T>(m_Values.size());
         }
     private:

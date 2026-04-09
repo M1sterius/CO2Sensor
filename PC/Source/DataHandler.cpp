@@ -1,7 +1,7 @@
 #include "DataHandler.hpp"
 #include "Utilities/Utilities.hpp"
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 #include <unordered_set>
 

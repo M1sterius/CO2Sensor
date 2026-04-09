@@ -9,7 +9,7 @@ namespace CO2
 {
     // TODO: Those macros aren't the best practice. Implement better error handling
     #ifdef _DEBUG
-        #define DEBUG_LOG(text) Serial.println(text)
+        #define DEBUG_LOG(fmt, ...) Serial.printf(fmt "\n", ##__VA_ARGS__)
 
         #define CATASTROPHIC_ERROR(text) \
             while (true) \

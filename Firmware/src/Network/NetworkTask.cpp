@@ -38,8 +38,8 @@ namespace CO2::Firmware
 
                 if (!m_pConnection->IsConnected())
                 {
-                    Serial.println(sensorData.ToString()); // TODO: Remove. For debug only
-                    m_pDataSaver->Write(sensorData);
+                    if (m_pConnection->IsTimeConfigured())
+                        m_pDataSaver->Write(sensorData);
 
                     const auto now = xTaskGetTickCount();
                     if (now - lastReconnectAttempt > pdMS_TO_TICKS(RECONNECT_ATTEMPT_DELAY))

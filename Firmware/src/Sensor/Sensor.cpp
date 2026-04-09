@@ -10,9 +10,24 @@ namespace CO2::Firmware
     bool Sensor::Begin()
     {
         m_SCD40.begin(Wire, SCD40_I2C_ADDR_62);
-        m_SCD40.stopPeriodicMeasurement();
+
+        int16_t error{0};
+        error = m_SCD40.stopPeriodicMeasurement();
+
+        if (error)
+        {
+            DEBUG_LOG("Failed to initialize SCD40 sensor. Error: %i.", error);
+            return false;
+        }
+
         delay(300);
-        m_SCD40.startPeriodicMeasurement();
+        error = m_SCD40.startPeriodicMeasurement();
+
+        if (error)
+        {
+            DEBUG_LOG("Failed to initialize SCD40 sensor. Error: %i.", error);
+            return false;
+        }
 
         m_Queue = xQueueCreate(SENSOR_QUEUE_SIZE, sizeof(SensorData));
 
@@ -30,14 +45,14 @@ namespace CO2::Firmware
         xTaskCreatePinnedToCore(&Sensor::TaskEntry, "SensorTask", 4096, this, 1, nullptr, SENSOR_TASK_CORE_ID);
     }
 
-    void Sensor::GetDisplayStats(float& temp, float& hum, float& co2)
+    void Sensor::GetDisplayStats(float& temp, float& hum, uint32_t& co2)
     {
         temp = m_TempAvg.GetAvg();
         hum = m_HumAvg.GetAvg();
         co2 = m_CO2Avg.GetAvg();
     }
 
-    void Sensor::TaskEntry(void *args)
+    void Sensor::TaskEntry(void* args)
     {
         auto self = static_cast<Sensor*>(args);
         self->SensorTask();
@@ -45,31 +60,46 @@ namespace CO2::Firmware
 
     void Sensor::SensorTask()
     {
-        const auto period = pdMS_TO_TICKS(SENSOR_READ_DELAY);
+        constexpr auto SENSOR_PERIOD = pdMS_TO_TICKS(SENSOR_READ_DELAY);
+        constexpr auto RETRY_PERIOD = pdMS_TO_TICKS(1000);
+
         auto lastWakeTime = xTaskGetTickCount();
 
         while (true)
         {
-            uint16_t co2;
-            float temperature;
-            float humidity;
+            uint16_t co2{0};
+            float temperature{0};
+            float humidity{0};
+            bool ready{false};
+            bool shouldRetry{true};
+            int16_t error{0};
 
-            const auto error = m_SCD40.readMeasurement(co2, temperature, humidity);
-            if (error)
-                DEBUG_LOG("SCD 40 error!");
+            error = m_SCD40.getDataReadyStatus(ready);
+            if (!error && ready)
+            {
+                error = m_SCD40.readMeasurement(co2, temperature, humidity);
+                if (error)
+                    DEBUG_LOG("Failed to read SCD40. Error: %i.", error);
+                else
+                {
+                    SensorData sensorData{};
+                    sensorData.Timestamp = time(nullptr);
+                    sensorData.Temperature = temperature;
+                    sensorData.Humidity = humidity;
+                    sensorData.CO2PPM = static_cast<uint32_t>(co2);
 
-            SensorData sensorData;
-            sensorData.Timestamp = time(nullptr);
-            sensorData.Temperature = temperature;
-            sensorData.Humidity = humidity;
-            sensorData.CO2PPM = static_cast<float>(co2);
+                    m_TempAvg.Push(temperature);
+                    m_HumAvg.Push(humidity);
+                    m_CO2Avg.Push(static_cast<uint32_t>(co2));
 
-            m_TempAvg.Push(temperature);
-            m_HumAvg.Push(humidity);
-            m_CO2Avg.Push(static_cast<float>(co2));
+                    shouldRetry = false;
+                    xQueueSend(m_Queue, &sensorData, portMAX_DELAY);
+                }
+            }
+            else
+                DEBUG_LOG("SCD40 wasn't ready for data read. Error: %i.", error);
 
-            xQueueSend(m_Queue, &sensorData, portMAX_DELAY);
-            vTaskDelayUntil(&lastWakeTime, period);
+            vTaskDelayUntil(&lastWakeTime, shouldRetry ? RETRY_PERIOD : SENSOR_PERIOD);
         }
     }
 }

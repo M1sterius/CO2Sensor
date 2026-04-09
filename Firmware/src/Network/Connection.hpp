@@ -16,11 +16,13 @@ namespace CO2::Firmware
         void Reconnect();
 
         bool IsConnected();
+        bool IsTimeConfigured() const;
 
         void Print(const char* str);
         void Println(const char* str);
     private:
         WiFiClient m_WiFiClient;
+        bool m_IsTimeConfigured{false};
 
         bool ConnectWiFi();
         bool ConnectServer();

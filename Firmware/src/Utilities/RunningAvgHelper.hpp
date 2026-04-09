@@ -28,11 +28,14 @@ namespace CO2::Firmware
 
         T GetAvg()
         {
+            if (m_Sum == 0 || m_Count == 0)
+                return 0;
+
             return m_Sum / static_cast<T>(m_Count);
         }
     private:
         CircularBuffer<T, Size> m_Buffer;
-        T m_Sum{0.0};
+        T m_Sum{0};
         uint32_t m_Count{0};
     };
 }

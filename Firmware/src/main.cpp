@@ -79,6 +79,9 @@ void setup()
     g_Display.ClearPrintf("Connecting...");
     g_Connection.Begin();
 
+    if (!g_Connection.IsTimeConfigured())
+        DEBUG_LOG("Readings won't be saved to flash because time could not be configured via NTP!");
+
     pinMode(BUTTON_PIN, INPUT_PULLUP);
     attachInterrupt(BUTTON_PIN, ButtonCallback, HIGH);
 
@@ -94,7 +97,8 @@ void loop()
         g_ButtonPressed = false;
     }
 
-    static float temp, hum, co2;
+    static float temp, hum;
+    static uint32_t co2;
     g_Sensor.GetDisplayStats(temp, hum, co2);
     g_Display.DrawDashboard(temp, hum, co2);
 
