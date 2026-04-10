@@ -2,3 +2,4 @@ CMakeBuild/
 .idea/
 .vscode/
 .pio/
+Bin/
