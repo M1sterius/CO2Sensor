@@ -43,7 +43,7 @@ namespace CO2
         tm* ti = localtime(&timestamp);
 
         char date[11];
-        strftime(date, sizeof(date), "%d-%m-%Y", ti);
+        strftime(date, sizeof(date), "%Y-%m-%d", ti);
 
         return date;
     }

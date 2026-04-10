@@ -13,6 +13,8 @@ namespace CO2::PC
     public:
         Backend();
         ~Backend();
+
+        void Run();
     private:
         std::shared_ptr<Server> m_Server;
         std::unique_ptr<DataSaver> m_DataSaver;

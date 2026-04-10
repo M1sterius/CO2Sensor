@@ -15,6 +15,11 @@ namespace CO2::PC
 
     Backend::~Backend() = default;
 
+    void Backend::Run()
+    {
+        m_Server->Run();
+    }
+
     void Backend::OnNewMessageReceived(const std::string& message)
     {
         const auto [error, sensorData, tag] = DataParser::Parse(message);
