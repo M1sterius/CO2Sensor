@@ -7,7 +7,7 @@ namespace CO2::PC
 {
     Server::Server(const std::function<void(const std::string&)>& readCallback)
         : m_WorkGuard(asio::make_work_guard(m_Context)), m_TimeoutTimer(m_Context),
-          m_ReadCallback(readCallback)
+            m_ReadCallback(readCallback), m_Running(true)
     {
         m_Buffer = std::vector<char>(1024);
         m_Worker = std::thread([this]{ m_Context.run(); });
@@ -18,11 +18,7 @@ namespace CO2::PC
 
     Server::~Server()
     {
-        Disconnect();
-
-        m_Context.stop();
-        if (m_Worker.joinable())
-            m_Worker.join();
+        Stop();
     }
 
     void Server::Start()
@@ -33,11 +29,21 @@ namespace CO2::PC
 
     void Server::Run()
     {
-        while (true)
+        while (m_Running)
         {
             auto message = m_MessageQueue.wait_and_pop();
             m_ReadCallback(message);
         }
+    }
+
+    void Server::Stop()
+    {
+        m_Running = false;
+        Disconnect();
+
+        m_Context.stop();
+        if (m_Worker.joinable())
+            m_Worker.join();
     }
 
     std::shared_ptr<Server> Server::Make(const std::function<void(const std::string&)>& readCallback)

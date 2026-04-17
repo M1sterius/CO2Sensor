@@ -26,9 +26,11 @@ namespace CO2::PC
 
         void Start();
         void Run();
+        void Stop();
     private:
         asio::io_context m_Context;
         std::thread m_Worker;
+        bool m_Running;
         std::vector<char> m_Buffer;
         std::string m_StringBuffer;
         CVQueue<std::string> m_MessageQueue;

@@ -2,7 +2,6 @@
 
 #include "Protocol.hpp"
 
-#include <utility>
 #include <string>
 
 namespace CO2::PC

@@ -18,7 +18,7 @@ namespace CO2
     constexpr uint32_t MAX_CONNECT_ATTEMPTS = 2;
     constexpr uint32_t CONNECT_ATTEMPT_DELAY = 200;
     constexpr uint32_t RECONNECT_ATTEMPT_DELAY = 10000;
-    constexpr uint32_t SENSOR_READ_DELAY = 7000;
+    constexpr uint32_t SENSOR_READ_DELAY = 5000;
     constexpr uint32_t SENSOR_QUEUE_SIZE = 16;
     constexpr uint32_t SENSOR_TASK_CORE_ID = 1;
     constexpr uint32_t NETWORK_TASK_CORE_ID = 0;
