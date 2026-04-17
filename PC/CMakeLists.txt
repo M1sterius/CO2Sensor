@@ -8,12 +8,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin/${CMAKE_BUILD_TYPE})
 add_executable(CO2Server
     Source/main.cpp
     Source/Server/Server.cpp
-    Source/DataHandler.cpp
     Source/Utilities/Utilities.cpp
-    Source/Server/Data/DataParser.cpp
-    Source/Server/Data/DataSaver.cpp
-        Source/Backend.cpp
-        Source/Backend.hpp
+    Source/Server/DataProcessing/DataParser.cpp
+    Source/Server/DataProcessing/DataSaver.cpp
+    Source/Backend.cpp
+        Source/RangesHelper.cpp
+        Source/RangesHelper.hpp
 )
 
 target_include_directories(CO2Server PRIVATE

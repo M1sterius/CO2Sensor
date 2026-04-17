@@ -32,7 +32,7 @@ namespace CO2
         float Humidity{0};
         uint32_t CO2PPM{0};
 
-        inline const char* ToString() const
+        const char* ToString() const
         {
             static char buffer[128];
             snprintf(buffer, sizeof(buffer), "%u,%f,%f,%u", Timestamp, Temperature, Humidity, CO2PPM);

@@ -3,3 +3,5 @@ CMakeBuild/
 .vscode/
 .pio/
 Bin/
+.qtcreator/
+.build/
