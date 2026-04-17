@@ -45,9 +45,29 @@ namespace CO2::PC
         }
     }
 
-    std::string RangesHelper::GetRangeDescription(const uint32_t index)
+    std::string RangesHelper::GetRangeDescription(const uint32_t ppm)
     {
+        const auto index = CalculateRangeIndex(ppm);
         assert(index <= 6);
-        return "TODO"; // TODO: Implement
+
+        switch (index)
+        {
+        case 0: // <= 450
+            return "Air quality is excellent with fresh air, supporting optimal comfort and concentration.";
+        case 1: // <= 600
+            return "Air quality is good and comfortable with no noticeable effects on occupants.";
+        case 2: // <= 900
+            return "Air quality is acceptable but may start to feel slightly stale in enclosed spaces.";
+        case 3: // <= 1200
+            return "Air quality is poor and may cause mild drowsiness or reduced concentration.";
+        case 4: // <= 1500
+            return "Air quality is bad and can lead to noticeable sleepiness, headaches, and decreased focus.";
+        case 5: // <= 2000
+            return "Air quality is very bad and may cause fatigue, headaches, and impaired cognitive performance.";
+        case 6: // > 2000
+            return "Air quality is dangerous and prolonged exposure can cause significant drowsiness and discomfort.";
+        default:
+            return "Unknown air quality level.";
+        }
     }
 }

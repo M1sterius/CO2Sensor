@@ -11,6 +11,6 @@ namespace CO2::PC
         static uint32_t CalculateRangeIndex(const uint32_t ppm);
 
         static std::string GetRangeWord(const uint32_t index);
-        static std::string GetRangeDescription(const uint32_t index);
+        static std::string GetRangeDescription(const uint32_t ppm);
     };
 }

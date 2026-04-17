@@ -2,6 +2,7 @@
 
 #include <queue>
 #include <mutex>
+#include <optional>
 #include <condition_variable>
 
 namespace CO2
@@ -37,14 +38,27 @@ namespace CO2
             m_CV.notify_one();
         }
 
-        T wait_and_pop()
+        std::optional<T> wait_and_pop()
         {
             std::unique_lock lock(m_Mutex);
-            m_CV.wait(lock, [this]{return !m_Queue.empty(); });
+            m_CV.wait(lock, [this]{ return !m_Queue.empty() || m_Done; });
+
+            if (m_Queue.empty() && m_Done) // TODO: should it really be &&?
+                return std::nullopt;
 
             auto temp = std::move(m_Queue.front());
             m_Queue.pop();
             return temp;
+        }
+
+        void stop()
+        {
+            {
+                std::unique_lock lock(m_Mutex);
+                m_Done = true;
+            }
+
+            m_CV.notify_all();
         }
 
         size_t size()
@@ -59,6 +73,7 @@ namespace CO2
             return m_Queue.empty();
         }
     private:
+        bool m_Done{false};
         std::mutex m_Mutex;
         std::queue<T> m_Queue;
         std::condition_variable m_CV;

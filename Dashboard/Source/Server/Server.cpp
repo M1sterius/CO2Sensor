@@ -5,9 +5,10 @@
 
 namespace CO2::PC
 {
-    Server::Server(const std::function<void(const std::string&)>& readCallback)
+    Server::Server(const std::function<void(const std::string&)>& readCallback,
+        const std::function<void(const ConnectEventType)>& connectCallback)
         : m_WorkGuard(asio::make_work_guard(m_Context)), m_TimeoutTimer(m_Context),
-            m_ReadCallback(readCallback), m_Running(true)
+            m_ReadCallback(readCallback), m_ConnectCallback(connectCallback), m_Running(true)
     {
         m_Buffer = std::vector<char>(1024);
         m_Worker = std::thread([this]{ m_Context.run(); });
@@ -21,6 +22,14 @@ namespace CO2::PC
         Stop();
     }
 
+    std::shared_ptr<Server> Server::Make(const std::function<void(const std::string&)>& readCallback,
+        const std::function<void(const ConnectEventType)>& connectCallback)
+    {
+        auto ptr = std::make_shared<Server>(readCallback, connectCallback);
+        ptr->Start();
+        return ptr;
+    }
+
     void Server::Start()
     {
         WaitForClientConnection();
@@ -32,7 +41,14 @@ namespace CO2::PC
         while (m_Running)
         {
             auto message = m_MessageQueue.wait_and_pop();
-            m_ReadCallback(message);
+
+            if (!message)
+                break;
+
+            if (std::holds_alternative<std::string>(*message))
+                m_ReadCallback(std::get<std::string>(*message));
+            else
+                m_ConnectCallback(std::get<ConnectEventType>(*message));
         }
     }
 
@@ -42,15 +58,10 @@ namespace CO2::PC
         Disconnect();
 
         m_Context.stop();
+        m_MessageQueue.stop();
+
         if (m_Worker.joinable())
             m_Worker.join();
-    }
-
-    std::shared_ptr<Server> Server::Make(const std::function<void(const std::string&)>& readCallback)
-    {
-        auto ptr = std::make_shared<Server>(readCallback);
-        ptr->Start();
-        return ptr;
     }
 
     void Server::WaitForClientConnection()
@@ -68,6 +79,8 @@ namespace CO2::PC
 
                 self->m_LastPacket = std::chrono::steady_clock::now();
                 self->StartTimeoutCheck();
+
+                self->m_MessageQueue.push(ConnectEventType::Connected);
             }
             else
             {
@@ -137,6 +150,8 @@ namespace CO2::PC
 
     void Server::Disconnect()
     {
+        m_MessageQueue.push(ConnectEventType::Disconnected);
+
         if (!m_Socket)
             return;
 
@@ -147,6 +162,7 @@ namespace CO2::PC
         m_TimeoutTimer.cancel();
         m_Socket.reset();
 
-        WaitForClientConnection();
+        if (m_Running)
+            WaitForClientConnection();
     }
 }

@@ -7,6 +7,7 @@ RowLayout {
     width: parent.width
 
     Text {
+        id: sensor_connection_indicator
         font.pixelSize: 22
         color: "white"
         textFormat: Text.RichText
@@ -24,8 +25,8 @@ RowLayout {
             ignoreUnknownSignals: true
 
             function onSensorStatusChanged(s, c) {
-                sensorStatusLabel.status = s
-                sensorStatusLabel.statusColor = c
+                sensor_connection_indicator.status = s
+                sensor_connection_indicator.statusColor = c
             }
         }
     }

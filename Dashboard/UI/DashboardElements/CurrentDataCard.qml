@@ -37,8 +37,8 @@ ColumnLayout{
 
     Item {
         id: co2_gauge
-        Layout.preferredWidth: current_data_card.width * 0.8
-        Layout.preferredHeight: current_data_card.height * 0.5
+        Layout.preferredWidth: current_data_card.width * 0.9
+        Layout.preferredHeight: current_data_card.height * 0.45
         Layout.alignment: Qt.AlignHCenter
 
         property int value: co2

@@ -47,4 +47,20 @@ namespace CO2
 
         return date;
     }
+
+    std::string Utilities::TimestampToLastReadingTime(const time_t timestamp)
+    {
+        std::tm localTime{};
+
+        #if defined(_WIN32)
+            localtime_s(&localTime, &timestamp);
+        #else
+            localtime_r(&timestamp, &localTime);
+        #endif
+
+        std::ostringstream oss;
+        oss << std::put_time(&localTime, "%Y-%m-%d %H:%M:%S");
+
+        return oss.str();
+    }
 }
