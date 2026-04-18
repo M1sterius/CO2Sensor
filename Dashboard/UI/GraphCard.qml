@@ -38,11 +38,20 @@ Rectangle {
         CalendarPopup{
             id: calendar_popup
 
-            availableDates: ["2026-04-16", "2026-04-17", "2026-04-18"]
+            // Array of allowed dates in format - 'yyyy-mm-dd'
+            availableDates: []
             selectedDate: new Date()
 
             onDateSelected: (date) => {
                 backend.onSelectedDateChanged(date)
+            }
+
+            Connections{
+                target: backend
+
+                function onSetAvailableDates(dates) {
+                    calendar_popup.availableDates = dates
+                }
             }
         }
 
@@ -52,6 +61,7 @@ Rectangle {
             Layout.margins: 10
 
             Text{
+                id: graph_properties
                 font.pixelSize: 14
                 leftPadding: 18
                 color: "#dcf0f5"
@@ -61,16 +71,15 @@ Rectangle {
                 property int totalReadings: 0
                 property string totalSize: "0 Kb"
 
-                text: "Days available: " + daysAvailable + ", Total readings: " + totalReadings +
-                      ", Total size: " + totalSize;
+                text: "Days available: " + daysAvailable + ", Total size: " + totalSize;
 
                 Connections{
                     target: backend
 
-                    function onReadingsAvailableStatusChanged(da, tr, ts) {
-                        daysAvailable = da
-                        totalReadings = tr
-                        totalSize = ts
+                    function onSetGraphProperties(dates, da, ts) {
+                        calendar_popup.availableDates = dates
+                        graph_properties.daysAvailable = da
+                        graph_properties.totalSize = ts
                     }
                 }
             }

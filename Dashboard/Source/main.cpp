@@ -20,9 +20,8 @@ int main(int argc, char** argv)
     engine.loadFromModule("Dashboard", "Main");
 
     CO2::PC::Backend backend;
-    backend.Start();
-
     engine.rootContext()->setContextProperty("backend", &backend);
 
+    backend.Start();
     return app.exec();
 }

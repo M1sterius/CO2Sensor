@@ -16,5 +16,6 @@ namespace CO2
 
         static std::string TimestampToDate(const time_t timestamp);
         static std::string TimestampToLastReadingTime(const time_t timestamp);
+        static double TimestampToDayFraction(const time_t timestamp);
     };
 }

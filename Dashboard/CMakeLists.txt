@@ -38,6 +38,7 @@ qt_add_qml_module(appDashboard
         UI/GraphElements/RadioButtonsRow.qml
         UI/GraphElements/ReadingsGraph.qml
         UI/GraphElements/CalendarPopup.qml
+        SOURCES Source/Server/DataProcessing/GraphDataProcessor.hpp Source/Server/DataProcessing/GraphDataProcessor.cpp
 )
 
 target_include_directories(appDashboard PRIVATE

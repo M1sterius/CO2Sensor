@@ -5,7 +5,6 @@ import QtQuick.Layouts
 Popup {
     id: root
 
-    // Array of allowed dates in format - 'yyyy-mm-dd'
     property var availableDates: []
     property date selectedDate: new Date()
     signal dateSelected(date selectedDate)
@@ -151,7 +150,6 @@ Popup {
                     hoverEnabled: true
                     enabled: dayDelegate.isAvailable && model.month === monthGrid.month
                     onClicked: {
-                        // UPDATE THE SELECTION PROPERTY IMMEDIATELY
                         root.selectedDate = dayDelegate.gridDate
                         root.dateSelected(dayDelegate.gridDate)
                         root.close()

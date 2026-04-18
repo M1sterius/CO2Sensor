@@ -80,4 +80,34 @@ namespace CO2::PC
 
         return {false, sensorData, tag};
     }
+
+    DataParser::ParsingResult DataParser::ParseFileRow(const std::string& row)
+    {
+
+        const auto readingTokens = Utilities::SplitString(row, ',');
+
+        if (readingTokens.size() != 4)
+        {
+            fmt::println("Parsing error! Tokens count isn't equal to 4.");
+            return {true};
+        }
+
+        SensorData sensorData;
+
+        try
+        {
+            sensorData.Timestamp = std::stoul(readingTokens[0]);
+            sensorData.Temperature = std::stof(readingTokens[1]);
+            sensorData.Humidity = std::stof(readingTokens[2]);
+            sensorData.CO2PPM = std::stoul(readingTokens[3]);
+        }
+        catch (const std::exception& e)
+        {
+            fmt::println("Parsing error! Failed to parse a token '{}'.", e.what());
+            return {true};
+        }
+
+        return {false, sensorData, ""};
+    }
+
 }

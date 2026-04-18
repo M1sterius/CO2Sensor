@@ -8,12 +8,11 @@
 
 #include <fmt/format.h>
 
-#include <random>
-
 namespace CO2::PC
 {
-    Backend::Backend(QObject *parent)
-        : QObject{parent}, m_DataSaver(std::make_unique<DataSaver>())
+    Backend::Backend(QObject* parent)
+    : QObject{parent}, m_DataSaver(std::make_unique<DataSaver>()), m_GraphData(std::make_unique<GraphDataProcessor>()),
+        m_SelectedDate(QDate::currentDate().toString("yyyy-MM-dd").toStdString()), m_SelectedReadingID(0)
     {
         // Both callbacks run on m_ServerThread, not on the main thread!!
         const std::function readCallback = [this](const std::string& msg) {
@@ -39,10 +38,13 @@ namespace CO2::PC
 
     void Backend::Start()
     {
+        UpdateGraphProperties();
+        m_GraphData->LoadDateData(QDate::currentDate().toString("yyyy-MM-dd").toStdString());
+
         m_ServerThread = std::thread([this]{ this->m_Server->Run(); });
     }
 
-    void Backend::OnNewMessageReceived(const std::string &message)
+    void Backend::OnNewMessageReceived(const std::string& message)
     {
         const auto [error, sensorData, tag] = DataParser::Parse(message);
 
@@ -65,45 +67,53 @@ namespace CO2::PC
         m_DataSaver->SaveReading(sensorData);
     }
 
-    double rng(double min, double max)
+    void Backend::UpdateGraphProperties()
     {
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_real_distribution<double> distrib(min, max);
+        QVariantList availableDates;
+        for (const auto& date : m_DataSaver->QueryAvailableDates())
+            availableDates.append(QString::fromStdString(date));
 
-        return distrib(gen);
+        const auto totalSize = m_DataSaver->QueryTotalSizeOfFiles();
+
+        emit setGraphProperties(availableDates, availableDates.count(),
+            QString::number(totalSize / 1024) + " Kb");
     }
 
-    void Backend::onUpdateButtonClicked()
+    void Backend::UpdateGraphPoints()
     {
-        qDebug() << "Update button clicked!";
+        const auto [yMin, yMax, yLabel, Points] = m_GraphData->GetGraphPoints(m_SelectedReadingID);
 
         QVariantList points;
+        for (const auto& point : Points)
+            points.append(point);
 
-        for (int i = 0; i < 100; i++)
-        {
-            points.append(QPointF((double)i, rng(0, 10)));
-        }
+        emit updateGraph(points, yMin, yMax, QString::fromStdString(yLabel));
+    }
 
-        emit updateGraph(points, 0.0, 10, 10 / 100, "Test label");
+    void Backend::onUpdateGraphButtonClicked()
+    {
+        UpdateGraphProperties();
+        UpdateGraphPoints();
     }
 
     void Backend::onConfigureSensorButtonClicked()
     {
+        // TODO: Implement
         qDebug() << "Configure button clicked!";
-
-        static int val = 654;
-
-        emit updateCurrentData(val++, 22.5, 40.2, "2026.04.16 20:05:01", "Test description");
     }
 
     void Backend::onReadingSelectionRadioButtonClicked(int buttonId)
     {
-        qDebug() << buttonId;
+        m_SelectedReadingID = buttonId;
+        UpdateGraphPoints();
     }
 
     void Backend::onSelectedDateChanged(const QDate date)
     {
-        qDebug() << date.toString();
+        m_SelectedDate = date.toString("yyyy-MM-dd").toStdString();
+
+        if (!m_GraphData->LoadDateData(m_SelectedDate))
+            return; // TODO: Error popup
+        UpdateGraphPoints();
     }
 }

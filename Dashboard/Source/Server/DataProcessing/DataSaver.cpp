@@ -3,6 +3,7 @@
 
 #include <fmt/format.h>
 
+#include <regex>
 #include <filesystem>
 
 namespace CO2::PC
@@ -48,5 +49,50 @@ namespace CO2::PC
             m_CurrentFile.flush();
             m_CurrentCount = 0;
         }
+    }
+
+    std::unordered_set<std::string> DataSaver::QueryAvailableDates()
+    {
+        std::unordered_set<std::string> res;
+
+        for (const auto& file : std::filesystem::directory_iterator(DataPath()))
+        {
+            const auto filename = file.path().filename();
+
+            if (VerifyFilename(filename))
+                res.insert(filename.stem().stem().string());
+        }
+
+        return res;
+    }
+
+    size_t DataSaver::QueryTotalSizeOfFiles()
+    {
+        size_t res{0};
+        for (const auto& file : std::filesystem::directory_iterator(DataPath()))
+        {
+            const auto filename = file.path().filename();
+
+            if (VerifyFilename(filename))
+                res += std::filesystem::file_size(file.path());
+        }
+
+        return res;
+    }
+
+    void DataSaver::LoadDateReadings(const std::string &date)
+    {
+
+    }
+
+    std::filesystem::path DataSaver::DataPath()
+    {
+        return std::filesystem::current_path() / "data";
+    }
+
+    bool DataSaver::VerifyFilename(const std::filesystem::path& path)
+    {
+        const auto pattern = std::regex(R"(^\d{4}-\d{2}-\d{2}\.co2\.txt$)");
+        return std::regex_match(path.string(), pattern);
     }
 }

@@ -17,5 +17,6 @@ namespace CO2::PC
         };
 
         static ParsingResult Parse(const std::string& message);
+        static ParsingResult ParseFileRow(const std::string& row);
     };
 }

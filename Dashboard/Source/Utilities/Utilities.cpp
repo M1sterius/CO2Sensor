@@ -63,4 +63,21 @@ namespace CO2
 
         return oss.str();
     }
+
+    double Utilities::TimestampToDayFraction(const time_t timestamp)
+    {
+        std::tm localTime{};
+
+        #if defined(_WIN32)
+                localtime_s(&localTime, &timestamp);
+        #else
+                localtime_r(&timestamp, &localTime);
+        #endif
+
+        double hours = static_cast<double>(localTime.tm_hour);
+        double minutes = static_cast<double>(localTime.tm_min) / 60.0;
+        double seconds = static_cast<double>(localTime.tm_sec) / 3600.0;
+
+        return hours + minutes + seconds; // range: [0, 24)
+    }
 }

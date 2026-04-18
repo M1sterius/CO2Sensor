@@ -38,7 +38,7 @@ RowLayout {
         text: "Update graphs"
         font.pixelSize: 14
         Layout.preferredWidth: parent.width * 0.12
-        onClicked: backend.onUpdateButtonClicked()
+        onClicked: backend.onUpdateGraphButtonClicked()
     }
 
     StyledButton {

@@ -16,7 +16,6 @@ Item{
         property double yMin: 0
         property double yMax: 10
         property string yLabel: "Carbon Dioxide"
-        property double graphTimestep: 1
 
         marginLeft: 0
         marginRight: 0
@@ -26,10 +25,9 @@ Item{
         Connections {
             target: backend
 
-            function onUpdateGraph(points, y_min, y_max, timestep, y_label) {
+            function onUpdateGraph(points, y_min, y_max, y_label) {
                 readings_graph.yMin = y_min;
                 readings_graph.yMax = y_max;
-                readings_graph.graphTimestep = timestep;
                 readings_graph.yLabel = y_label;
 
                 line_series.replace(points)
@@ -51,8 +49,8 @@ Item{
 
         axisX: ValueAxis {
             min: 0
-            max: 100
-            titleText: "Time"
+            max: 24
+            titleText: "Time (Hh)"
         }
 
         axisY: ValueAxis {
