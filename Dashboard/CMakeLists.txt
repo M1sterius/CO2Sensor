@@ -41,6 +41,7 @@ qt_add_qml_module(appDashboard
         UI/GraphElements/CalendarPopup.qml
         QML_FILES UI/GraphElements/StyledRadioButton.qml
         QML_FILES UI/GraphElements/PeriodSelectRow.qml
+        QML_FILES UI/SensorConfigPopup.qml
 )
 
 target_include_directories(appDashboard PRIVATE

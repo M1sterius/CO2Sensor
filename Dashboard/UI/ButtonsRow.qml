@@ -31,6 +31,18 @@ RowLayout {
         }
     }
 
+    SensorConfigPopup {
+        id: config_popup
+
+        Connections{
+            target: backend
+
+            function onSensorReadyStatusChanged(isReady) {
+                config_popup.isSensorReady = isReady;
+            }
+        }
+    }
+
     // push buttons to the right
     Item { Layout.fillWidth: true }
 
@@ -45,6 +57,10 @@ RowLayout {
         text: "Configure Sensor"
         font.pixelSize: 14
         Layout.preferredWidth: parent.width * 0.15
-        onClicked: backend.onConfigureSensorButtonClicked()
+
+        onClicked: {
+            backend.onConfigureSensorButtonClicked()
+            config_popup.open()
+        }
     }
 }

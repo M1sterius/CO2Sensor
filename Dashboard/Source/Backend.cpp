@@ -94,8 +94,15 @@ namespace CO2::PC
 
     void Backend::onConfigureSensorButtonClicked()
     {
-        // TODO: Implement
-        qDebug() << "Configure button clicked!";
+        // TODO: Implement serial finding logic
+
+        const auto serialConnected = false;
+        emit sensorReadyStatusChanged(serialConnected);
+    }
+
+    void Backend::onSubmitSensorConfigButtonClicked(const QString ssid, const QString password, const QString ip)
+    {
+        qDebug() << ssid << password << ip;
     }
 
     void Backend::onReadingSelectionRadioButtonClicked(int buttonId)

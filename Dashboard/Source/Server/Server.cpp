@@ -92,7 +92,7 @@ namespace CO2::PC
 
     void Server::StartTimeoutCheck()
     {
-        constexpr auto TIMEOUT_TIME = static_cast<uint32_t>(SENSOR_READ_DELAY * 1.5);
+        constexpr auto TIMEOUT_TIME = static_cast<uint32_t>(SENSOR_READ_PERIOD * 1.5);
 
         m_TimeoutTimer.expires_after(std::chrono::milliseconds(TIMEOUT_TIME));
 

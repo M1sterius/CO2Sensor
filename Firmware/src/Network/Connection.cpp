@@ -55,10 +55,10 @@ namespace CO2::Firmware
         uint32_t count = 0;
 
         WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-        while (!WiFi.isConnected() && count < MAX_CONNECT_ATTEMPTS)
+        while (!WiFi.isConnected() && count < MAX_WIFI_CONNECT_ATTEMPTS)
         {
             DEBUG_LOG("Attempting to connect to WiFi!");
-            delay(CONNECT_ATTEMPT_DELAY);
+            delay(INITIAL_RECONNECT_ATTEMPT_DELAY);
             count++;
         }
         
@@ -107,11 +107,11 @@ namespace CO2::Firmware
     {
         uint32_t count = 0;
 
-        while (!m_WiFiClient.connect(SERVER_IP, SERVER_PORT) && count < MAX_CONNECT_ATTEMPTS)
+        while (!m_WiFiClient.connect(SERVER_IP, SERVER_PORT) && count < MAX_SERVER_CONNECT_ATTEMPTS)
         {
             DEBUG_LOG("Attempting to connect to the server.");
             m_WiFiClient.stop();
-            delay(CONNECT_ATTEMPT_DELAY);
+            delay(INITIAL_RECONNECT_ATTEMPT_DELAY);
             count++;
         }
         

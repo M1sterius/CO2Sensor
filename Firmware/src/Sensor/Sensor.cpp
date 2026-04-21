@@ -60,7 +60,7 @@ namespace CO2::Firmware
 
     void Sensor::SensorTask()
     {
-        constexpr auto SENSOR_PERIOD = pdMS_TO_TICKS(SENSOR_READ_DELAY);
+        constexpr auto SENSOR_PERIOD = pdMS_TO_TICKS(SENSOR_READ_PERIOD);
 
         auto lastWakeTime = xTaskGetTickCount();
         uint16_t co2{0};

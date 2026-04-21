@@ -42,7 +42,7 @@ namespace CO2::Firmware
                         m_pDataSaver->Write(sensorData);
 
                     const auto now = xTaskGetTickCount();
-                    if (now - lastReconnectAttempt > pdMS_TO_TICKS(RECONNECT_ATTEMPT_DELAY))
+                    if (now - lastReconnectAttempt > pdMS_TO_TICKS(Connection::RECONNECT_ATTEMPT_DELAY))
                     {
                         lastReconnectAttempt = xTaskGetTickCount();
                         m_pConnection->Reconnect();
