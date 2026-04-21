@@ -12,7 +12,7 @@ namespace CO2::PC
 {
     Backend::Backend(QObject* parent)
     : QObject{parent}, m_GraphData(std::make_unique<GraphDataProcessor>()),
-        m_SelectedDate(QDate::currentDate().toString("yyyy-MM-dd").toStdString()), m_SelectedReadingID(0)
+        m_SelectedDate(QDate::currentDate().toString("yyyy-MM-dd").toStdString())
     {
         // Both callbacks run on m_ServerThread, not on the main thread!!
         const std::function readCallback = [this](const std::string& msg) {
@@ -79,8 +79,11 @@ namespace CO2::PC
 
     void Backend::UpdateGraphPoints()
     {
-        const auto [yMin, yMax, yLabel, Points] = m_GraphData->GetGraphPoints(m_SelectedReadingID);
-        emit updateGraph(Points, yMin, yMax, QString::fromStdString(yLabel));
+        const double xMax = 24.0;
+        const auto xMin = xMax - double(m_SelectedPeriodHours);
+
+        const auto [yMin, yMax, yLabel, Points] = m_GraphData->GetGraphPoints(m_SelectedReading);
+        emit updateGraph(Points, xMin, xMax, yMin, yMax, QString::fromStdString(yLabel));
     }
 
     void Backend::onUpdateGraphButtonClicked()
@@ -97,7 +100,13 @@ namespace CO2::PC
 
     void Backend::onReadingSelectionRadioButtonClicked(int buttonId)
     {
-        m_SelectedReadingID = buttonId;
+        m_SelectedReading = static_cast<ReadingType>(buttonId);
+        UpdateGraphPoints();
+    }
+
+    void Backend::onPeriodSelectionRadioButtonClicked(const int buttonId)
+    {
+        m_SelectedPeriodHours = buttonId; // buttonId value directly correponds to hours
         UpdateGraphPoints();
     }
 

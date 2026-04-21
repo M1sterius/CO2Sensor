@@ -4,15 +4,13 @@ import QtQuick.Layouts
 import QtGraphs
 
 Item{
-    Layout.preferredWidth: graph_card.width * 0.96
-    Layout.preferredHeight: graph_card.height * 0.78
-    Layout.alignment: Qt.AlignHCenter
-
     GraphsView {
         id: readings_graph
         anchors.fill: parent
         antialiasing: true
 
+        property double xMin: 12
+        property double xMax: 24
         property double yMin: 0
         property double yMax: 10
         property string yLabel: "Carbon Dioxide"
@@ -25,7 +23,9 @@ Item{
         Connections {
             target: backend
 
-            function onUpdateGraph(points, y_min, y_max, y_label) {
+            function onUpdateGraph(points, x_min, x_max, y_min, y_max, y_label) {
+                readings_graph.xMin = x_min;
+                readings_graph.xMax = x_max;
                 readings_graph.yMin = y_min;
                 readings_graph.yMax = y_max;
                 readings_graph.yLabel = y_label;
@@ -48,8 +48,8 @@ Item{
         }
 
         axisX: ValueAxis {
-            min: 0
-            max: 24
+            min: readings_graph.xMin
+            max: readings_graph.xMax
             titleText: "Time (Hh)"
         }
 
@@ -62,8 +62,8 @@ Item{
         LineSeries {
             id: line_series
             name: "test"
-            color: "blue"
-            width: 2
+            color: "red"
+            width: 1.5
         }
     }
 }

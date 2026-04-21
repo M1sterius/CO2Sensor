@@ -27,11 +27,17 @@ Rectangle {
             Layout.alignment: Qt.AlignHCenter
         }
 
-        RadioButtonsRow{
+        ReadingSelectRow{
 
         }
 
         ReadingsGraph{
+            Layout.preferredWidth: graph_card.width * 0.96
+            Layout.preferredHeight: graph_card.height * 0.7
+            Layout.alignment: Qt.AlignHCenter
+        }
+
+        PeriodSelectRow{
 
         }
 

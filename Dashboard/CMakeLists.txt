@@ -36,9 +36,11 @@ qt_add_qml_module(appDashboard
         UI/DashboardElements/CurrentDataCard.qml
         UI/DashboardElements/ConcentrationRangesCard.qml
 
-        UI/GraphElements/RadioButtonsRow.qml
+        UI/GraphElements/ReadingSelectRow.qml
         UI/GraphElements/ReadingsGraph.qml
         UI/GraphElements/CalendarPopup.qml
+        QML_FILES UI/GraphElements/StyledRadioButton.qml
+        QML_FILES UI/GraphElements/PeriodSelectRow.qml
 )
 
 target_include_directories(appDashboard PRIVATE

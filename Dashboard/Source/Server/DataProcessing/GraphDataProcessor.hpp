@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Protocol.hpp"
+#include "ReadingType.hpp"
 
 #include <QPointF>
 #include <QVariantList>
@@ -41,7 +42,7 @@ namespace CO2::PC
         ~GraphDataProcessor();
 
         bool LoadDateReadings(const std::string& date);
-        GraphPointsContainer GetGraphPoints(const uint32_t readingId);
+        GraphPointsContainer GetGraphPoints(const ReadingType readingType);
 
         void SaveReading(const SensorData& sensorData);
 

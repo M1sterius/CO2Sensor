@@ -120,10 +120,8 @@ namespace CO2::PC
         return res;
     }
 
-    GraphDataProcessor::GraphPointsContainer GraphDataProcessor::GetGraphPoints(const uint32_t readingId)
+    GraphDataProcessor::GraphPointsContainer GraphDataProcessor::GetGraphPoints(const ReadingType readingType)
     {
-        assert(readingId <= 2);
-
         GraphPointsContainer res;
 
         for (const auto& sensorData : m_Storage)
@@ -131,7 +129,7 @@ namespace CO2::PC
             const auto t = Utilities::TimestampToDayFraction(sensorData.Timestamp);
             double y = 0.0;
 
-            switch (static_cast<ReadingType>(readingId))
+            switch (readingType)
             {
             case ReadingType::CarbonDioxide:
                 y = static_cast<double>(sensorData.CO2PPM);
