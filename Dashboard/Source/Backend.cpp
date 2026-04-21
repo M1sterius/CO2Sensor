@@ -1,7 +1,7 @@
 #include "Backend.hpp"
 #include "Utilities/Utilities.hpp"
 #include "Utilities/RangesHelper.hpp"
-#include "Server/DataProcessing/DataParser.hpp"
+#include "Server/DataProcessing/Parser.hpp"
 
 #include <QDebug>
 #include <QPointF>
@@ -11,7 +11,7 @@
 namespace CO2::PC
 {
     Backend::Backend(QObject* parent)
-    : QObject{parent}, m_DataSaver(std::make_unique<DataSaver>()), m_GraphData(std::make_unique<GraphDataProcessor>()),
+    : QObject{parent}, m_GraphData(std::make_unique<GraphDataProcessor>()),
         m_SelectedDate(QDate::currentDate().toString("yyyy-MM-dd").toStdString()), m_SelectedReadingID(0)
     {
         // Both callbacks run on m_ServerThread, not on the main thread!!
@@ -39,14 +39,15 @@ namespace CO2::PC
     void Backend::Start()
     {
         UpdateGraphProperties();
-        m_GraphData->LoadDateData(QDate::currentDate().toString("yyyy-MM-dd").toStdString());
+        m_GraphData->LoadDateReadings(QDate::currentDate().toString("yyyy-MM-dd").toStdString());
+        UpdateGraphPoints();
 
         m_ServerThread = std::thread([this]{ this->m_Server->Run(); });
     }
 
     void Backend::OnNewMessageReceived(const std::string& message)
     {
-        const auto [error, sensorData, tag] = DataParser::Parse(message);
+        const auto [error, sensorData, tag] = Parser::Parse(message);
 
         if (error)
             return;
@@ -64,16 +65,13 @@ namespace CO2::PC
                 QString::fromStdString(time), QString::fromStdString(description));
         }
 
-        m_DataSaver->SaveReading(sensorData);
+        m_GraphData->SaveReading(sensorData);
     }
 
     void Backend::UpdateGraphProperties()
     {
-        QVariantList availableDates;
-        for (const auto& date : m_DataSaver->QueryAvailableDates())
-            availableDates.append(QString::fromStdString(date));
-
-        const auto totalSize = m_DataSaver->QueryTotalSizeOfFiles();
+        const auto availableDates = m_GraphData->QueryAvailableDates();
+        const auto totalSize = m_GraphData->QueryTotalSizeOfFiles();
 
         emit setGraphProperties(availableDates, availableDates.count(),
             QString::number(totalSize / 1024) + " Kb");
@@ -82,12 +80,7 @@ namespace CO2::PC
     void Backend::UpdateGraphPoints()
     {
         const auto [yMin, yMax, yLabel, Points] = m_GraphData->GetGraphPoints(m_SelectedReadingID);
-
-        QVariantList points;
-        for (const auto& point : Points)
-            points.append(point);
-
-        emit updateGraph(points, yMin, yMax, QString::fromStdString(yLabel));
+        emit updateGraph(Points, yMin, yMax, QString::fromStdString(yLabel));
     }
 
     void Backend::onUpdateGraphButtonClicked()
@@ -112,7 +105,7 @@ namespace CO2::PC
     {
         m_SelectedDate = date.toString("yyyy-MM-dd").toStdString();
 
-        if (!m_GraphData->LoadDateData(m_SelectedDate))
+        if (!m_GraphData->LoadDateReadings(m_SelectedDate))
             return; // TODO: Error popup
         UpdateGraphPoints();
     }

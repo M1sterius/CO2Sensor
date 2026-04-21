@@ -6,7 +6,7 @@
 
 namespace CO2::PC
 {
-    class DataParser
+    class Parser
     {
     public:
         struct ParsingResult

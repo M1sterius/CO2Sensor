@@ -1,8 +1,6 @@
-#ifndef BACKEND_H
-#define BACKEND_H
+#pragma once
 
 #include "Server/Server.hpp"
-#include "Server/DataProcessing/DataSaver.hpp"
 #include "Server/DataProcessing/GraphDataProcessor.hpp"
 #include "Utilities/RunningAvgHelper.hpp"
 
@@ -35,7 +33,6 @@ namespace CO2::PC
         void setGraphProperties(QVariantList availableDates, int availableDatesCount, QString totalSize);
     private:
         std::shared_ptr<Server> m_Server;
-        std::unique_ptr<DataSaver> m_DataSaver;
         std::unique_ptr<GraphDataProcessor> m_GraphData;
         std::thread m_ServerThread;
         RunningAvgHelper<uint32_t, 10> m_Co2Avg;
@@ -51,4 +48,3 @@ namespace CO2::PC
     };
 }
 
-#endif // BACKEND_H

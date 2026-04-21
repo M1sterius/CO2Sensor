@@ -3,10 +3,12 @@
 #include "Protocol.hpp"
 
 #include <QPointF>
+#include <QVariantList>
 
 #include <string>
 #include <fstream>
 #include <set>
+#include <mutex>
 
 namespace CO2::PC
 {
@@ -15,9 +17,16 @@ namespace CO2::PC
     private:
         struct SensorDataComparator
         {
-            bool operator()(const SensorData& a, const SensorData& b) const {
+            bool operator () (const SensorData& a, const SensorData& b) const {
                 return a.Timestamp < b.Timestamp;
             }
+        };
+
+        struct ReadingsSaveState
+        {
+            std::string Date{};
+            std::fstream File{};
+            uint32_t Count{0};
         };
     public:
         struct GraphPointsContainer
@@ -25,16 +34,22 @@ namespace CO2::PC
             double Min{0.0};
             double Max{0.0};
             std::string Label{"Label"};
-            std::vector<QPointF> Points{};
+            QVariantList Points{};
         };
 
         GraphDataProcessor();
         ~GraphDataProcessor();
 
-        bool LoadDateData(const std::string& date);
+        bool LoadDateReadings(const std::string& date);
         GraphPointsContainer GetGraphPoints(const uint32_t readingId);
+
+        void SaveReading(const SensorData& sensorData);
+
+        QVariantList QueryAvailableDates() const;
+        size_t QueryTotalSizeOfFiles() const;
     private:
-        std::fstream m_File;
         std::multiset<SensorData, SensorDataComparator> m_Storage;
+        ReadingsSaveState m_SaveState;
+        std::mutex m_Mutex;
     };
 }

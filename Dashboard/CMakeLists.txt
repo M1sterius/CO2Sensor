@@ -17,8 +17,9 @@ qt_add_executable(appDashboard
     Source/Utilities/Utilities.cpp
     Source/Utilities/RangesHelper.cpp
     Source/Server/Server.cpp
-    Source/Server/DataProcessing/DataParser.cpp
-    Source/Server/DataProcessing/DataSaver.cpp
+    Source/Server/DataProcessing/Parser.cpp
+    Source/Server/DataProcessing/GraphDataProcessor.cpp
+
 )
 
 qt_add_qml_module(appDashboard
@@ -38,7 +39,6 @@ qt_add_qml_module(appDashboard
         UI/GraphElements/RadioButtonsRow.qml
         UI/GraphElements/ReadingsGraph.qml
         UI/GraphElements/CalendarPopup.qml
-        SOURCES Source/Server/DataProcessing/GraphDataProcessor.hpp Source/Server/DataProcessing/GraphDataProcessor.cpp
 )
 
 target_include_directories(appDashboard PRIVATE

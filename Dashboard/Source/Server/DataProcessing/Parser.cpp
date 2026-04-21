@@ -1,4 +1,4 @@
-#include "DataParser.hpp"
+#include "Parser.hpp"
 #include "Utilities/Utilities.hpp"
 
 #include <fmt/format.h>
@@ -19,7 +19,7 @@ namespace CO2::PC
         return allowedTags.contains(tag);
     }
 
-    DataParser::ParsingResult DataParser::Parse(const std::string& message)
+    Parser::ParsingResult Parser::Parse(const std::string& message)
     {
         const auto tokens = Utilities::SplitString(message, ':');
 
@@ -81,7 +81,7 @@ namespace CO2::PC
         return {false, sensorData, tag};
     }
 
-    DataParser::ParsingResult DataParser::ParseFileRow(const std::string& row)
+    Parser::ParsingResult Parser::ParseFileRow(const std::string& row)
     {
 
         const auto readingTokens = Utilities::SplitString(row, ',');
