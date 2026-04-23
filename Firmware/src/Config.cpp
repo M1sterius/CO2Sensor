@@ -12,7 +12,7 @@ namespace CO2::Firmware
         if (!res)
             return false;
 
-        if (!m_Prefs.isKey("Calibrated") || !m_Prefs.isKey("WiFiSSID") ||
+        if (!m_Prefs.isKey("Configured") || !m_Prefs.isKey("WiFiSSID") ||
             !m_Prefs.isKey("WiFiPassword") || !m_Prefs.isKey("ServerIP"))
         {
             InitializeValues();
@@ -21,9 +21,11 @@ namespace CO2::Firmware
         }
 
         m_IsConfigurationRequired = !m_Prefs.getBool("Configured");
-        m_Prefs.getString("WiFiSSID", m_WiFiSSID, strlen(m_WiFiSSID));
-        m_Prefs.getString("WiFiPassword", m_WiFiPassword, strlen(m_WiFiPassword));
-        m_Prefs.getString("ServerIP", m_ServerIP, strlen(m_ServerIP));
+        m_Prefs.getString("WiFiSSID", m_WiFiSSID, (sizeof(m_WiFiSSID) / sizeof(char)) - 1);
+        m_Prefs.getString("WiFiPassword", m_WiFiPassword, (sizeof(m_WiFiPassword) / sizeof(char)) - 1);
+        m_Prefs.getString("ServerIP", m_ServerIP, (sizeof(m_ServerIP) / sizeof(char)) - 1);
+
+        DEBUG_LOG("%s;%s;%s", m_WiFiSSID, m_WiFiPassword, m_ServerIP);
 
         m_Prefs.end();
         return true;
@@ -35,6 +37,7 @@ namespace CO2::Firmware
         {
             if (ReadSerialAndParse(m_WiFiSSID, m_WiFiPassword, m_ServerIP))
             {
+                DEBUG_LOG("Config completed!");
                 m_Prefs.begin("config", false);
 
                 m_Prefs.putBool("Configured", true);

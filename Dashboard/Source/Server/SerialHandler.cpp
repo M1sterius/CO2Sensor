@@ -1,6 +1,8 @@
 #include "SerialHandler.hpp"
 #include "Protocol.hpp"
 
+#include <QDebug>
+
 #include <fmt/format.h>
 
 #include <string>
@@ -25,8 +27,9 @@ namespace CO2::PC
 
             if (esp_serial.isOpen())
             {
-                const auto message = fmt::format("{};{};{}", wifiSsid, wifiPassword, serverIp);
+                const auto message = fmt::format("{};{};{}\n", wifiSsid, wifiPassword, serverIp);
                 esp_serial.write(message);
+                qDebug() << message;
 
                 // TODO: Response check would be nice
 

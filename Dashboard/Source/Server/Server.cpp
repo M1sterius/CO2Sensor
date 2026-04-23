@@ -3,6 +3,8 @@
 
 #include <fmt/format.h>
 
+#include <QDebug>
+
 namespace CO2::PC
 {
     Server::Server(const std::function<void(const std::string&)>& readCallback,
@@ -20,6 +22,17 @@ namespace CO2::PC
     Server::~Server()
     {
         Stop();
+    }
+
+    std::string Server::GetLocalIP()
+    {
+        asio::ip::udp::socket socket(m_Context);
+        socket.connect({
+            asio::ip::make_address("8.8.8.8"),
+            80
+        });
+
+       return socket.local_endpoint().address().to_string();
     }
 
     std::shared_ptr<Server> Server::Make(const std::function<void(const std::string&)>& readCallback,

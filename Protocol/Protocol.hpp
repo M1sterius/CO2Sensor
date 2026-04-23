@@ -8,9 +8,6 @@ namespace CO2
     constexpr auto NTP_SERVER = "pool.ntp.org";
 
     // TODO: Move to config
-    constexpr auto WIFI_SSID = "Glazgen2";
-    constexpr auto WIFI_PASSWORD = "GlaZgeN0208";
-    constexpr auto SERVER_IP = "192.168.1.101";
     constexpr auto SERVER_MDNS = "co2-server.local";
 
     constexpr auto NEW_SENSOR_READING_TAG = "SRD";
@@ -36,7 +33,7 @@ namespace CO2
         const char* ToString() const
         {
             static char buffer[128];
-            snprintf(buffer, sizeof(buffer), "%u,%f,%f,%u", Timestamp, Temperature, Humidity, CO2PPM);
+            snprintf(buffer, sizeof(buffer), "%u,%.2f,%.2f,%u", Timestamp, Temperature, Humidity, CO2PPM);
             return buffer;
         }
     };

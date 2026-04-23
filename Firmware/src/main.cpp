@@ -53,7 +53,7 @@ void setup()
     if (!g_Config.Begin())
         FatalError("Failed to initialize config!", 10);
 
-    if (digitalRead(CONFIGURATION_BUTTON_PIN) || g_Config.IsConfigurationRequired())
+    if (!digitalRead(CONFIGURATION_BUTTON_PIN) || g_Config.IsConfigurationRequired())
     {
         g_Display.ClearPrintf("Configuration!");
         g_Config.Configure();
@@ -73,6 +73,7 @@ void setup()
         FatalError("Data saver failed to initialize.", 12);
 
     g_Display.ClearPrintf("Connecting...");
+    g_Connection.SetConfigInstance(&g_Config);
     g_Connection.Begin();
 
     if (!g_Connection.IsTimeConfigured())
@@ -89,5 +90,5 @@ void loop()
     g_Sensor.GetDisplayStats(temp, hum, co2);
     g_Display.DrawDashboard(temp, hum, co2);
 
-    vTaskDelay(pdMS_TO_TICKS(2000));
+    vTaskDelay(pdMS_TO_TICKS(5000));
 }

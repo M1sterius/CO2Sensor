@@ -22,7 +22,7 @@ namespace CO2::PC
 
         const std::function connectCallback = [this](const Server::ConnectEventType type) {
             const auto status = type == Server::ConnectEventType::Connected ? "Connected" : "Not connected";
-            const auto color = type == Server::ConnectEventType::Connected ? "green" : "red";
+            const auto color = type == Server::ConnectEventType::Connected ? "#22E600" : "red";
 
             emit sensorStatusChanged(status, color);
         };
@@ -80,16 +80,18 @@ namespace CO2::PC
 
     void Backend::UpdateGraphPoints()
     {
-        const double xMax = 24.0;
-        const auto xMin = xMax - double(m_SelectedPeriodHours);
+        const auto [yMin, yMax, yLabel, Points] = m_GraphData->GetGraphPoints(m_SelectedReading);
+
+        const auto xMax = Points.back().toPointF().x();
+        const auto xMin = std::max(0.0, xMax - double(m_SelectedPeriodHours));
 
         // Multiply yMax by 0.05 to make sure all points are visible on the graph
-        const auto [yMin, yMax, yLabel, Points] = m_GraphData->GetGraphPoints(m_SelectedReading);
         emit updateGraph(Points, xMin, xMax, yMin, yMax * 1.05, QString::fromStdString(yLabel));
     }
 
     void Backend::onUpdateGraphButtonClicked()
     {
+        m_GraphData->LoadDateReadings(m_SelectedDate);
         UpdateGraphProperties();
         UpdateGraphPoints();
     }
@@ -102,6 +104,21 @@ namespace CO2::PC
 
     void Backend::onSubmitSensorConfigButtonClicked(const QString ssid, const QString password, const QString ip)
     {
+        if (SerialHandler::IsSensorConnected())
+        {
+            const auto localIp = !ip.isEmpty() ? ip.toStdString() : m_Server->GetLocalIP();
+            const auto res = SerialHandler::SendConfig(ssid.toStdString(), password.toStdString(), localIp);
+
+            if (!res)
+            {
+                // TODO: Error popup
+            }
+        }
+        else
+        {
+            // TODO: Error popup
+        }
+
         qDebug() << ssid << password << ip;
     }
 

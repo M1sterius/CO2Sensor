@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Config.hpp"
+
 #include <Arduino.h>
 #include <WiFi.h>
 
@@ -29,9 +31,12 @@ namespace CO2::Firmware
 
         void Print(const char* str);
         void Println(const char* str);
+
+        void SetConfigInstance(Config* pConfig);
     private:
         WiFiClient m_WiFiClient;
         bool m_IsTimeConfigured{false};
+        Config* m_pConfig{nullptr};
 
         bool ConnectWiFi();
         bool ConnectServer();

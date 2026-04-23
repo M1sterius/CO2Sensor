@@ -1,6 +1,7 @@
 #include "Connection.hpp"
 #include "Utilities/Debug.hpp"
 #include "../../Protocol/Protocol.hpp"
+#include "Config.hpp"
 
 namespace CO2::Firmware
 {
@@ -23,9 +24,9 @@ namespace CO2::Firmware
     void Connection::Reconnect()
     {
         if (!WiFi.isConnected())
-            WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+            WiFi.begin(m_pConfig->GetWiFiSSID(), m_pConfig->GetWiFiPassword());
         
-        m_WiFiClient.connect(SERVER_IP, SERVER_PORT);
+        m_WiFiClient.connect(m_pConfig->GetServerIP(), SERVER_PORT);
     }
 
     bool Connection::IsConnected()
@@ -50,11 +51,17 @@ namespace CO2::Firmware
             m_WiFiClient.println(str);
     }
 
+    void Connection::SetConfigInstance(Config* pConfig)
+    {
+        assert(pConfig);
+        m_pConfig = pConfig;
+    }
+
     bool Connection::ConnectWiFi()
     {
         uint32_t count = 0;
 
-        WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+        WiFi.begin(m_pConfig->GetWiFiSSID(), m_pConfig->GetWiFiPassword());
         while (!WiFi.isConnected() && count < MAX_WIFI_CONNECT_ATTEMPTS)
         {
             DEBUG_LOG("Attempting to connect to WiFi!");
@@ -107,7 +114,7 @@ namespace CO2::Firmware
     {
         uint32_t count = 0;
 
-        while (!m_WiFiClient.connect(SERVER_IP, SERVER_PORT) && count < MAX_SERVER_CONNECT_ATTEMPTS)
+        while (!m_WiFiClient.connect(m_pConfig->GetServerIP(), SERVER_PORT) && count < MAX_SERVER_CONNECT_ATTEMPTS)
         {
             DEBUG_LOG("Attempting to connect to the server.");
             m_WiFiClient.stop();

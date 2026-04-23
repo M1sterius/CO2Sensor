@@ -8,5 +8,9 @@ namespace CO2::PC
     {
     public:
         static bool IsSensorConnected();
+        static bool SendConfig(const std::string& wifiSsid, const std::string& wifiPassword,
+            const std::string& serverIp);
+    private:
+        static std::string FindPort();
     };
 }

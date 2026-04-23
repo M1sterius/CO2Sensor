@@ -33,6 +33,8 @@ namespace CO2::PC
             const std::function<void(const ConnectEventType)>& connectCallback);
         ~Server();
 
+        std::string GetLocalIP();
+
         void Start();
         void Run();
         void Stop();
