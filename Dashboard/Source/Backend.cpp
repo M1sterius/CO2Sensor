@@ -2,6 +2,7 @@
 #include "Utilities/Utilities.hpp"
 #include "Utilities/RangesHelper.hpp"
 #include "Server/DataProcessing/Parser.hpp"
+#include "Server/SerialHandler.hpp"
 
 #include <QDebug>
 #include <QPointF>
@@ -82,8 +83,9 @@ namespace CO2::PC
         const double xMax = 24.0;
         const auto xMin = xMax - double(m_SelectedPeriodHours);
 
+        // Multiply yMax by 0.05 to make sure all points are visible on the graph
         const auto [yMin, yMax, yLabel, Points] = m_GraphData->GetGraphPoints(m_SelectedReading);
-        emit updateGraph(Points, xMin, xMax, yMin, yMax, QString::fromStdString(yLabel));
+        emit updateGraph(Points, xMin, xMax, yMin, yMax * 1.05, QString::fromStdString(yLabel));
     }
 
     void Backend::onUpdateGraphButtonClicked()
@@ -94,9 +96,7 @@ namespace CO2::PC
 
     void Backend::onConfigureSensorButtonClicked()
     {
-        // TODO: Implement serial finding logic
-
-        const auto serialConnected = false;
+        const auto serialConnected = SerialHandler::IsSensorConnected();
         emit sensorReadyStatusChanged(serialConnected);
     }
 

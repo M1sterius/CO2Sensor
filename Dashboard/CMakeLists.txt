@@ -19,7 +19,7 @@ qt_add_executable(appDashboard
     Source/Server/Server.cpp
     Source/Server/DataProcessing/Parser.cpp
     Source/Server/DataProcessing/GraphDataProcessor.cpp
-
+    Source/Server/SerialHandler.cpp
 )
 
 qt_add_qml_module(appDashboard
@@ -39,9 +39,9 @@ qt_add_qml_module(appDashboard
         UI/GraphElements/ReadingSelectRow.qml
         UI/GraphElements/ReadingsGraph.qml
         UI/GraphElements/CalendarPopup.qml
-        QML_FILES UI/GraphElements/StyledRadioButton.qml
-        QML_FILES UI/GraphElements/PeriodSelectRow.qml
-        QML_FILES UI/SensorConfigPopup.qml
+        UI/GraphElements/StyledRadioButton.qml
+        UI/GraphElements/PeriodSelectRow.qml
+        UI/SensorConfigPopup.qml
 )
 
 target_include_directories(appDashboard PRIVATE
@@ -49,6 +49,7 @@ target_include_directories(appDashboard PRIVATE
     ../Protocol
     ${DEPENDENCIES_DIR}/boost_asio
     ${DEPENDENCIES_DIR}/fmt/include
+    ${DEPENDENCIES_DIR}/serial/include
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -63,8 +64,10 @@ set_target_properties(appDashboard PROPERTIES
 )
 
 add_subdirectory(${DEPENDENCIES_DIR}/fmt ${CMAKE_CURRENT_BINARY_DIR}/fmt)
+add_subdirectory(${DEPENDENCIES_DIR}/serial ${CMAKE_CURRENT_BINARY_DIR}/serial)
 
-target_link_libraries(appDashboard PRIVATE fmt::fmt Qt6::Quick Qt6::Core Qt6::Graphs Qt6::QuickControls2)
+target_link_libraries(appDashboard PRIVATE
+    fmt::fmt Qt6::Quick Qt6::Core Qt6::Graphs Qt6::QuickControls2 serial)
 
 if(WIN32)
     target_link_libraries(appDashboard PRIVATE ws2_32 mswsock)

@@ -1,0 +1,13 @@
+#pragma once
+
+#include <serial/serial.h>
+
+namespace CO2::PC
+{
+    class SerialHandler
+    {
+    public:
+        static bool IsSensorConnected();
+        static bool SendConfig(const std::string& wifiSsid, const std::string& wifiPassword, const std::string& serverIp);
+    };
+}
