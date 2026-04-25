@@ -40,7 +40,14 @@ TODO
 - platformio to compile and flash the firmware
 
 ## Architecture overview
-TODO
+The project consists of two main parts: **Firmware** for ESP32 and **Dashboard** desktop application.
+### Firmware
+The firmware uses a FreeRTOS task to poll `Sensirion SCD40` sensor at regular intervals to obtain CO2 ppm, temperature
+and humidity measurements. A FreeRTOS queue is used to notify `NetworkTask` that new data is availbale.
+When `NetworkTask` awakes, it sends the measurement to the server via TCP or saves it to a circular buffer implemented
+in LittleFS if connection to the server could not be established.
+When the sensor mamages to reestablish connection to the server, it will send all accumulated data to it in batches.
+
 
 ## Building and running the project
 ### Firmware
