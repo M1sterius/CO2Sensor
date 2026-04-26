@@ -29,7 +29,18 @@ The project includes firmware for an esp32 based air quality sensor that measure
 - A push button and wires
 
 ## Wiring schema
-TODO
+- SCD40
+  - GND - GND
+  - VDD - 3.3v
+  - SCL - GPIO22
+  - SDA - GPIO21
+- LCD1602 (with I2C adapter)
+  - GND - GND
+  - VDD - 5.0v
+  - SCL - GPIO22
+  - SDA - GPIO21
+- Configuration button
+  - GPIO18 - Button - GND
 
 ## Tech used
 - Modern C++20
@@ -42,11 +53,20 @@ TODO
 ## Architecture overview
 The project consists of two main parts: **Firmware** for ESP32 and **Dashboard** desktop application.
 ### Firmware
-The firmware uses a FreeRTOS task to poll `Sensirion SCD40` sensor at regular intervals to obtain CO2 ppm, temperature
-and humidity measurements. A FreeRTOS queue is used to notify `NetworkTask` that new data is availbale.
-When `NetworkTask` awakes, it sends the measurement to the server via TCP or saves it to a circular buffer implemented
-in LittleFS if connection to the server could not be established.
-When the sensor mamages to reestablish connection to the server, it will send all accumulated data to it in batches.
+- A a FreeRTOS task is used to poll `Sensirion SCD40` sensor at regular intervals to obtain CO2 ppm, temperature and humidity measurements.
+- Inter-task communication is handled via thread-safe FreeRTOS queues, notifying the `NetworkTask` the moment new data is ready.
+- When `NetworkTask` awakes, it sends the measurement to the server via TCP or saves it to a circular buffer implemented
+  on LittleFS, if connection to the server could not be established.
+- When the sensor mamages to reestablish connection to the server, it will send all accumulated data to it in batches.
+- Running average of last 5 measurements is printed on LCD display.
+
+### Dashboard
+- Dashboard app runs a Boost.Asio based server in the background to accept data packets coming from ESP32.
+- If the server does not receive any data from the ESP32 for too long (about 2x sensor polling interval), it will
+  automatically disconnect the client and start waiting for a reconnect attempt.
+- All incoming data is saved to files to make sure you can always view graphs of previous day's measurements.
+- The graph uses std::multiset to sort all measurements by timestamp even if they were received out of order.
+- The app implements sensor configuration mode via a simple string of tokens separated by a `;` that gets sent to the sensor via serial. 
 
 
 ## Building and running the project
